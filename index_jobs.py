@@ -13,6 +13,7 @@ def directory_tree(start_path):
     frontend_username = ""
     instance_name = ""
     entry_name = ""
+    last_known_timestamp = 0
 
     for root, dirs, files in os.walk(start_path):
         level = root.replace(start_path, '').count(os.sep)
@@ -24,15 +25,26 @@ def directory_tree(start_path):
             instance_name = os.path.basename(root)
 
         if level == 4:
+            last_known_timestamp = 0  # Reset each timestamp for each entry
             entry_name = os.path.basename(root)
 
         for f in files:
             if (os.path.splitext(f)[1] == ".out") or (os.path.splitext(f)[1] == ".err"):
                 f_path = os.path.join(root, f)
-
                 f_size = os.path.getsize(f_path)
+                job_id = os.path.splitext(f)[0]
+                job_type = os.path.splitext(f)[1]
 
-                tree.append([f, frontend_username, instance_name, entry_name, f_size, f_path])
+                # Try and get timestamp if it's an .out file
+                if job_type == ".out":
+                    with open(f_path) as f:
+                        first_line = f.readline()
+                        try:
+                            last_known_timestamp = int(first_line.split('(', 1)[1].split(')')[0])
+                        except IndexError:
+                            pass
+
+                tree.append([f, frontend_username, instance_name, entry_name, f_size, f_path, last_known_timestamp, job_id, job_type])
 
     return tree
 
@@ -49,13 +61,14 @@ def begin_indexing():
         frontend_user = curr_inst[1]
         instance_name = curr_inst[2]
         entry_name = curr_inst[3]
-        job_id = os.path.splitext(curr_inst[0])[0]
-        job_type = os.path.splitext(curr_inst[0])[1]
+        job_id = curr_inst[7]
+        job_type = curr_inst[8]
 
         if (entry_name, job_id) in tree_organized:
             if job_type == ".out":
                 tree_organized[(entry_name, job_id)][4] = curr_inst[5]
                 tree_organized[(entry_name, job_id)][5] = curr_inst[4]
+                tree_organized[(entry_name, job_id)][8] = curr_inst[6]
             else:
                 tree_organized[(entry_name, job_id)][6] = curr_inst[5]
                 tree_organized[(entry_name, job_id)][7] = curr_inst[4]
@@ -63,15 +76,15 @@ def begin_indexing():
         else:
             if job_type == ".out":
                 tree_organized[(entry_name, job_id)] = [job_id, frontend_user, instance_name, entry_name,
-                                                        curr_inst[5], curr_inst[4], None, None]
+                                                        curr_inst[5], curr_inst[4], None, None, curr_inst[6]]
             else:
                 tree_organized[(entry_name, job_id)] = [job_id, frontend_user, instance_name, entry_name,
-                                                        None, None, curr_inst[5], curr_inst[4]]
+                                                        None, None, curr_inst[5], curr_inst[4], None]
 
     # Issue a warning if an output file doesn't have a error (or vise-versa)
     if job_count_complete * 2 != len(tree_unorganized):
         log("ERROR", "Organizing the tree, job is either duplicated where it shouldn't or missing"
-                     " (Counted {} Processed {})".format(len(tree_unorganized), job_count_complete*2))
+                     " (Counted {} Processed {})".format(len(tree_unorganized), job_count_complete * 2))
 
     # Connect to the database (will setup if not existing)
     db = Database()
@@ -89,7 +102,7 @@ def begin_indexing():
             found_logs = [False, False, False, False, False]
             if job_data[7] != 0:
                 if job_data[6] is None:
-                    log("WARNING", "Job "+str(job_data[0])+" does not have an error file, skipping")
+                    log("WARNING", "Job " + str(job_data[0]) + " does not have an error file, skipping")
                     continue
 
                 with open(job_data[6], 'rb', 0) as file, \

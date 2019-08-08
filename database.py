@@ -49,12 +49,13 @@ class Database:
         cur = self.conn.cursor()
 
         cur.execute(
-            "INSERT INTO file_index(JobID,FileSize,FrontendUsername,InstanceName,EntryName,"
-            "FilePath, MasterLog, StartdLog, StarterLog, StartdHistLog, XML_desc)"
-            "VALUES('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}')"
-                .format(job[0], (job[5] + job[7]), job[1], job[2], job[3], path,
+            "INSERT INTO file_index(JobID, FileSize, Timestamp, FrontendUsername, InstanceName, EntryName, "
+            "FilePath, "
+            "MasterLog, StartdLog, StarterLog, StartdHistLog, XML_desc)"
+            "VALUES('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}')"
+                .format(job[0], (job[5] + job[7]), job[8], job[1], job[2], job[3],
+                        path,
                         found_logs[0], found_logs[1], found_logs[2], found_logs[3], found_logs[4]))
-
         return
 
     def commit(self):
