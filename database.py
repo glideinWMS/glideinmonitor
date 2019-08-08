@@ -1,5 +1,4 @@
 import sqlite3
-import os
 from config import config
 from logger import log
 
@@ -26,7 +25,9 @@ class Database:
         cur = self.conn.cursor()
 
         # Do directory/file names need to be sanitized?
-        cur.execute("SELECT FrontendUsername, InstanceName, FileSize FROM file_index WHERE JobID='{}' and EntryName='{}'".format(job[0], job[3]))
+        cur.execute(
+            "SELECT FrontendUsername, InstanceName, FileSize FROM file_index WHERE JobID='{}' and EntryName='{}'".format(
+                job[0], job[3]))
 
         response = cur.fetchone()
         if response is None:
@@ -43,18 +44,15 @@ class Database:
 
     def add_job(self, job, path, found_logs):
         # Adds a job to the database
-        # Get the timestamp of both files
-        output_timestamp = os.path.getmtime(job[4])
-        error_timestamp = os.path.getmtime(job[6])
 
         # Insert into the database
         cur = self.conn.cursor()
 
         cur.execute(
-            "INSERT INTO file_index(JobID,FileSize,TimestampOutput,TimestampError,FrontendUsername,InstanceName,EntryName,"
+            "INSERT INTO file_index(JobID,FileSize,FrontendUsername,InstanceName,EntryName,"
             "FilePath, MasterLog, StartdLog, StarterLog, StartdHistLog, XML_desc)"
-            "VALUES('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}')"
-                .format(job[0], (job[5] + job[7]), output_timestamp, error_timestamp, job[1], job[2], job[3], path,
+            "VALUES('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}')"
+                .format(job[0], (job[5] + job[7]), job[1], job[2], job[3], path,
                         found_logs[0], found_logs[1], found_logs[2], found_logs[3], found_logs[4]))
 
         return
@@ -63,3 +61,29 @@ class Database:
         # Commits changes made to the database
         self.conn.commit()
         return
+
+    def output_table(self):
+        # Checks if a job exists in the database
+        cur = self.conn.cursor()
+
+        # Do directory/file names need to be sanitized?
+        cur.execute("SELECT ID, JobID, FileSize, InstanceName, FrontendUsername FROM file_index")
+
+        return cur.fetchall()
+
+    def getFile(self, jobID):
+        # Checks if a job exists in the database
+        cur = self.conn.cursor()
+
+        # Do directory/file names need to be sanitized?
+        cur.execute("SELECT FilePath FROM file_index WHERE ID='{}'".format(jobID))
+
+        response = cur.fetchone()
+
+        if response is None:
+            return None
+        else:
+            return response[0]
+
+    def quit(self):
+        self.conn.close()

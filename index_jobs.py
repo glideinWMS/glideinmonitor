@@ -71,7 +71,7 @@ def begin_indexing():
     # Issue a warning if an output file doesn't have a error (or vise-versa)
     if job_count_complete * 2 != len(tree_unorganized):
         log("ERROR", "Organizing the tree, job is either duplicated where it shouldn't or missing"
-                     " (Counted {} Processed {}*2)".format(len(tree_unorganized), job_count_complete))
+                     " (Counted {} Processed {})".format(len(tree_unorganized), job_count_complete*2))
 
     # Connect to the database (will setup if not existing)
     db = Database()
@@ -79,6 +79,7 @@ def begin_indexing():
     # Iterate through each job checking the database if it needs to be updated
     for job_name, job_data in tree_organized.items():
         # Check if the current instance is in the database, if not then add it
+        # found_logs = [False, False, False, False, False]
         if not (db.check_for_instance(job_data)):
             # Create the directory if it does not exist
             if not os.path.exists(save_dir):
@@ -87,6 +88,10 @@ def begin_indexing():
             # Check if the file has certain logs within it
             found_logs = [False, False, False, False, False]
             if job_data[7] != 0:
+                if job_data[6] is None:
+                    log("WARNING", "Job "+str(job_data[0])+" does not have an error file, skipping")
+                    continue
+
                 with open(job_data[6], 'rb', 0) as file, \
                         mmap.mmap(file.fileno(), 0, access=mmap.ACCESS_READ) as s:
                     if s.find(b'MasterLog\n========') != -1:
@@ -100,16 +105,17 @@ def begin_indexing():
                     if s.find(b'=== Encoded XML description of glidein activity ===') != -1:
                         found_logs[4] = True
 
-        # Tar the output and error file
-        curr_job_path = save_dir + "/" + job_name[0] + "_" + job_name[1] + ".tar"
-        with tarfile.open(curr_job_path, "w:gz") as tar:
-            tar.add(job_data[4], arcname=os.path.basename(job_data[4]))
-            tar.add(job_data[6], arcname=os.path.basename(job_data[6]))
+            # Tar the output and error file
+            curr_job_path = save_dir + "/" + job_name[0] + "_" + job_name[1] + ".tar.gz"
+            with tarfile.open(curr_job_path, "w:gz") as tar:
+                tar.add(job_data[4], arcname=os.path.basename(job_data[4]))
+                tar.add(job_data[6], arcname=os.path.basename(job_data[6]))
+                tar.close()
 
-        # Add it to the database
-        db.add_job(job_data, curr_job_path, found_logs)
+            # Add it to the database
+            db.add_job(job_data, curr_job_path, found_logs)
 
-        jobs_added += 1
+            jobs_added += 1
 
     # Indexing Complete
     db.commit()

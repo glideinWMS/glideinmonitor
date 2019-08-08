@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GWMS Factory - Job View</title>
+
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <style>
+        .container {
+            padding-top: 50px;
+        }
+    </style>
+</head>
+<body>
+<div id="app" class="container">
+
+    <h1>Job Data for {{job_id}}</h1>
+
+    <pre>{{content}}</pre>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"
+            integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+            integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"
+            integrity="sha256-chlNFSVx3TdcQ2Xlw7SvnbLAavAQLO0Y/LBiWX04viY=" crossorigin="anonymous"></script>
+    <!--    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.common.dev.js"-->
+    <!--            integrity="sha256-/8JQrA+jzyGKb4jpzp+/A28CDO0TS9aSlaDrd6v6htU=" crossorigin="anonymous"></script>-->
+    <script src="/assets/bundle.js"></script>
+
+    <script>
+        const App = new Vue({
+            el: '#app',
+            data: {
+                job_id: null,
+                content: null
+            },
+            mounted: function () {
+                this.$nextTick(init(this));
+            }
+        });
+
+        function init(App) {
+            const urlPath = location.pathname;
+            App.job_id = urlPath.split("/").pop();
+
+            // Get Data
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '/api/job_info/' + App.job_id, true);
+            xhr.responseType = 'arraybuffer';
+
+            xhr.onload = function (e) {
+                if (this.status === 200) {
+                    console.log("Got the TarFile, extracting");
+                    console.log(inflate(this.response));
+                    App.content = inflate(this.response);
+
+                    test = "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"
+                    base64(test);
+                } else {
+                    console.log("Didn't get shit")
+                }
+            };
+
+            xhr.send();
+        }
+    </script>
+</div>
+</body>
+</html>

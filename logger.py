@@ -16,4 +16,4 @@ def log(error_level, message):
 
     # Write to error log
     with open(config['Log_Dir'] + datetime.datetime.now().strftime("/%Y-%m-%d") + ".txt", "a") as log_file:
-        log_file.write(error_level + " - " + str(datetime.datetime.now()) + " - " + message)
+        log_file.write(error_level + " - " + str(datetime.datetime.now()) + " - " + message + "\n")
