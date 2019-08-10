@@ -1,6 +1,6 @@
 import sqlite3
 from config import config
-from logger import log
+from utils.logger import log
 
 
 class Database:
@@ -68,7 +68,8 @@ class Database:
         cur = self.conn.cursor()
 
         # Do directory/file names need to be sanitized?
-        cur.execute("SELECT ID, JobID, FileSize, InstanceName, FrontendUsername FROM file_index")
+        cur.execute("SELECT JobID, FileSize, Timestamp, FrontendUsername, InstanceName, EntryName, "
+                    "MasterLog, StartdLog, StarterLog, StartdHistLog, XML_desc FROM file_index")
 
         return cur.fetchall()
 

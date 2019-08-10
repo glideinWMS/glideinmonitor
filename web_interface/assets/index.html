@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GWMS Factory Monitoring</title>
+
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.1.2/css/tempusdominus-bootstrap-4.min.css"
+          integrity="sha256-XPTBwC3SBoWHSmKasAk01c08M6sIA5gF5+sRxqak2Qs=" crossorigin="anonymous"/>
+    <link rel="stylesheet" type="text/css"
+          href="https://cdn.datatables.net/v/bs4/jszip-2.5.0/dt-1.10.18/b-1.5.6/b-colvis-1.5.6/b-html5-1.5.6/b-print-1.5.6/cr-1.5.0/kt-2.5.0/datatables.min.css"/>
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.9/dist/css/bootstrap-select.min.css">
+
+    <style>
+        .container {
+            padding-top: 50px;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container" style="padding-top: 10px; padding-bottom: 10px">
+            <a class="navbar-brand" href="/">GWMS Factory Job Logs</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExample07"
+                    aria-controls="navbarsExample07" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarsExample07">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+                    </li>
+                    <!--                    <li class="nav-item">-->
+                    <!--                        <a class="nav-link" href="#">Link</a>-->
+                    <!--                    </li>-->
+                </ul>
+                <form class="form-inline my-2 my-md-0">
+                    <input class="form-control" type="text" placeholder="Search Job ID" aria-label="Search">
+                </form>
+            </div>
+        </div>
+    </nav>
+    <div class="container">
+        <h1>Factory Monitoring Job View</h1>
+        <p>Filters below alter the data in the table</p>
+        <div class="row">
+            <div class='col-md-4'>
+                <div class="form-group">
+                    Timestamp From
+                    <div class="input-group date" id="datetime_from" data-target-input="nearest">
+                        <input type="text" class="form-control datetimepicker-input" data-target="#datetime_from"/>
+                        <div class="input-group-append" data-target="#datetime_from" data-toggle="datetimepicker">
+                            <div class="input-group-text">
+                                <ion-icon name="calendar"></ion-icon>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class='col-md-4'>
+                <div class="form-group">
+                    Timestamp To
+                    <div class="input-group date" id="datetime_to" data-target-input="nearest">
+                        <input type="text" class="form-control datetimepicker-input" data-target="#datetime_to"/>
+                        <div class="input-group-append" data-target="#datetime_to" data-toggle="datetimepicker">
+                            <div class="input-group-text">
+                                <ion-icon name="calendar"></ion-icon>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class='col-md-4'>
+                <div class="form-group">
+                    Entry Name
+                    <div class="input-group">
+                        <select class="selectpicker" data-live-search="true" multiple>
+                            <option>Mustard</option>
+                            <option>Ketchup</option>
+                            <option>Barbecue</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class='col-md-4'>
+                <button type="button" id="search" class="btn btn-primary btn-lg">Search</button>
+            </div>
+        </div>
+        <hr>
+        <br>
+        <div class="d-flex justify-content-center">
+            <div v-show="table_loading" style="width: 10rem; height: 10rem;" class="spinner-grow" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+        <div v-show="!table_loading">
+            <div id="table_buttons"></div>
+            <br>
+            <table id="main_table" class="table" style="width:100%">
+                <thead>
+                <tr>
+                    <th>JobID</th>
+                    <th>FileSize</th>
+                    <th>Timestamp</th>
+                    <th>FrontendUsername</th>
+                    <th>InstanceName</th>
+                    <th>EntryName</th>
+                    <th>MasterLog</th>
+                    <th>StartdLog</th>
+                    <th>StarterLog</th>
+                    <th>StartdHistLog</th>
+                    <th>XML_desc</th>
+                </tr>
+                </thead>
+                <tfoot>
+                <tr>
+                    <th>JobID</th>
+                    <th>FileSize</th>
+                    <th>Timestamp</th>
+                    <th>FrontendUsername</th>
+                    <th>InstanceName</th>
+                    <th>EntryName</th>
+                    <th>MasterLog</th>
+                    <th>StartdLog</th>
+                    <th>StarterLog</th>
+                    <th>StartdHistLog</th>
+                    <th>XML_desc</th>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"
+        integrity="sha256-chlNFSVx3TdcQ2Xlw7SvnbLAavAQLO0Y/LBiWX04viY="
+        crossorigin="anonymous"></script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+
+<link rel="stylesheet" type="text/css"
+      href="https://cdn.datatables.net/v/bs4/jszip-2.5.0/dt-1.10.18/b-1.5.6/b-colvis-1.5.6/b-html5-1.5.6/b-print-1.5.6/cr-1.5.0/fc-3.2.5/fh-3.1.4/kt-2.5.0/r-2.2.2/sc-2.0.0/datatables.min.css"/>
+
+<script type="text/javascript"
+        src="https://cdn.datatables.net/v/bs4/jszip-2.5.0/dt-1.10.18/b-1.5.6/b-colvis-1.5.6/b-html5-1.5.6/b-print-1.5.6/cr-1.5.0/kt-2.5.0/datatables.min.js"></script>
+
+<script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.1/js/tempusdominus-bootstrap-4.min.js"></script>
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.1/css/tempusdominus-bootstrap-4.min.css"/>
+
+<script type="module" src="https://unpkg.com/ionicons@4.5.10-0/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule="" src="https://unpkg.com/ionicons@4.5.10-0/dist/ionicons/ionicons.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.10/js/bootstrap-select.min.js"
+        integrity="sha256-FXzZGmaRFZngOjUKy3lWZJq/MflaMpffBbu3lPT0izE=" crossorigin="anonymous"></script>
+
+<script>
+    const App = new Vue({
+        el: '#app',
+        data: {
+            table_loading: true
+        },
+        mounted: function () {
+            this.$nextTick(init(this));
+        }
+    });
+
+
+    function init(App) {
+        App.table = $('#main_table').DataTable({
+            "scrollX": true,
+            buttons: ['copy', 'excel', 'pdf', 'print'],
+            colReorder: true,
+            keys: true
+        });
+
+        App.table.buttons(0, null).containers().appendTo($('#table_buttons'));
+
+        App.table.ajax.url("/api/temp").load(function () {
+            App.table_loading = false;
+        });
+
+        $('#datetime_from').datetimepicker({
+            useCurrent: false
+        });
+        $('#datetime_to').datetimepicker({
+            useCurrent: false
+        });
+        $('#datetime_from').datetimepicker('maxDate', moment());
+        $('#datetime_to').datetimepicker('maxDate', moment());
+        $("#datetime_from").on("change.datetimepicker", function (e) {
+            $('#datetime_to').datetimepicker('minDate', e.date);
+        });
+        $("#datetime_to").on("change.datetimepicker", function (e) {
+            $('#datetime_from').datetimepicker('maxDate', e.date);
+            console.log(e.date)
+        });
+
+        $('.my-select').selectpicker();
+    }
+</script>
+</body>
+</html>

@@ -8,6 +8,17 @@
     <orderEntry type="library" name="bootstrap" level="application" />
     <orderEntry type="library" name="vue.common.dev" level="application" />
     <orderEntry type="library" name="jquery" level="application" />
+    <orderEntry type="library" name="moment" level="application" />
+    <orderEntry type="library" name="ionicons" level="application" />
+    <orderEntry type="library" name="ace" level="application" />
+    <orderEntry type="library" name="ionicons.esm" level="application" />
+    <orderEntry type="library" name="prism" level="application" />
+    <orderEntry type="library" name="datatables" level="application" />
+    <orderEntry type="library" name="tempusdominus-bootstrap-4" level="application" />
+    <orderEntry type="library" name="bootstrap-select" level="application" />
+    <orderEntry type="library" name="popper" level="application" />
+    <orderEntry type="library" name="popper-utils" level="application" />
+    <orderEntry type="library" name="jquery-3.2.1.slim" level="application" />
   </component>
   <component name="TestRunnerService">
     <option name="PROJECT_TEST_RUNNER" value="Unittests" />
