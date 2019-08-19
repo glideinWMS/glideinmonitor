@@ -2029,7 +2029,7 @@ window.inflate = function(data) {
 
 window.base64 = function(base_data) {
                 var data = atob(base_data);
-            console.log(pako.inflate(data, { to: 'string' }))
+            return (pako.inflate(data, { to: 'string' }))
 }
 
 },{"atob":5,"pako":6}],5:[function(require,module,exports){

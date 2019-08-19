@@ -4,19 +4,24 @@
     <meta charset="UTF-8">
     <title>GWMS Factory Monitoring</title>
 
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet"
+    <link href="/assets/libs/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.1.2/css/tempusdominus-bootstrap-4.min.css"
+          href="/assets/libs/tempusdominus-bootstrap-4.min.css"
           integrity="sha256-XPTBwC3SBoWHSmKasAk01c08M6sIA5gF5+sRxqak2Qs=" crossorigin="anonymous"/>
     <link rel="stylesheet" type="text/css"
-          href="https://cdn.datatables.net/v/bs4/jszip-2.5.0/dt-1.10.18/b-1.5.6/b-colvis-1.5.6/b-html5-1.5.6/b-print-1.5.6/cr-1.5.0/kt-2.5.0/datatables.min.css"/>
+          href="/assets/libs/datatables.min.css"/>
     <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.9/dist/css/bootstrap-select.min.css">
+          href="/assets/libs/bootstrap-select.min.css">
 
     <style>
         .container {
             padding-top: 50px;
+        }
+
+        table.dataTable tbody th,
+        table.dataTable tbody td {
+            white-space: nowrap;
         }
     </style>
 </head>
@@ -25,38 +30,66 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container" style="padding-top: 10px; padding-bottom: 10px">
             <a class="navbar-brand" href="/">GWMS Factory Job Logs</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExample07"
-                    aria-controls="navbarsExample07" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbarCollapse"
+                    aria-controls="mainNavbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <div class="collapse navbar-collapse" id="navbarsExample07">
+            <div class="collapse navbar-collapse" id="mainNavbarCollapse">
                 <ul class="navbar-nav mr-auto">
                     <li class="nav-item active">
                         <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
                     </li>
-                    <!--                    <li class="nav-item">-->
-                    <!--                        <a class="nav-link" href="#">Link</a>-->
-                    <!--                    </li>-->
                 </ul>
-                <form class="form-inline my-2 my-md-0">
-                    <input class="form-control" type="text" placeholder="Search Job ID" aria-label="Search">
+                <form class="form-inline my-2 my-md-0"  method="post" action="/job_guid_reroute/">
+                    <input class="form-control" type="text" name="GUID" placeholder="Goto GUID" aria-label="Search">
+                    <input type="submit" style="display: none" />
                 </form>
             </div>
         </div>
     </nav>
     <div class="container">
+        <!-- Header Text -->
         <h1>Factory Monitoring Job View</h1>
         <p>Filters below alter the data in the table</p>
+        <p>Click search once you have narrowed the query</p>
+
+        <!-- Error Modal -->
+        <div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">That's Unlucky!</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <span id="errorModalText"></span>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary">Save changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="row">
             <div class='col-md-4'>
                 <div class="form-group">
                     Timestamp From
                     <div class="input-group date" id="datetime_from" data-target-input="nearest">
-                        <input type="text" class="form-control datetimepicker-input" data-target="#datetime_from"/>
+                        <input id="datetime_from_input" type="text" class="form-control datetimepicker-input" data-target="#datetime_from"/>
                         <div class="input-group-append" data-target="#datetime_from" data-toggle="datetimepicker">
                             <div class="input-group-text">
                                 <ion-icon name="calendar"></ion-icon>
+                            </div>
+                        </div>
+                        <div class="input-group-append">
+                            <div id="datetime_from_clear"  class="input-group-text">
+                                <ion-icon name="trash"></ion-icon>
                             </div>
                         </div>
                     </div>
@@ -66,10 +99,15 @@
                 <div class="form-group">
                     Timestamp To
                     <div class="input-group date" id="datetime_to" data-target-input="nearest">
-                        <input type="text" class="form-control datetimepicker-input" data-target="#datetime_to"/>
+                        <input id="datetime_to_input" type="text" class="form-control datetimepicker-input" data-target="#datetime_to"/>
                         <div class="input-group-append" data-target="#datetime_to" data-toggle="datetimepicker">
                             <div class="input-group-text">
                                 <ion-icon name="calendar"></ion-icon>
+                            </div>
+                        </div>
+                        <div class="input-group-append">
+                            <div id="datetime_to_clear" class="input-group-text">
+                                <ion-icon name="trash"></ion-icon>
                             </div>
                         </div>
                     </div>
@@ -79,10 +117,7 @@
                 <div class="form-group">
                     Entry Name
                     <div class="input-group">
-                        <select class="selectpicker" data-live-search="true" multiple>
-                            <option>Mustard</option>
-                            <option>Ketchup</option>
-                            <option>Barbecue</option>
+                        <select class="selectpicker" id="select_entry_name" data-live-search="true" multiple>
                         </select>
                     </div>
                 </div>
@@ -135,83 +170,43 @@
             </table>
         </div>
     </div>
+
+    <br><br><br>
 </div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"
+<script src="/assets/libs/jquery.min.js"
         integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+<script src="/assets/libs/popper.min.js"
         integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
         crossorigin="anonymous"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+<script src="/assets/libs/bootstrap.min.js"
         integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
         crossorigin="anonymous"></script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"
+<script src="/assets/libs/vue.min.js"
         integrity="sha256-chlNFSVx3TdcQ2Xlw7SvnbLAavAQLO0Y/LBiWX04viY="
         crossorigin="anonymous"></script>
 
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+<script type="text/javascript" src="/assets/libs/moment.min.js"></script>
 
 <link rel="stylesheet" type="text/css"
-      href="https://cdn.datatables.net/v/bs4/jszip-2.5.0/dt-1.10.18/b-1.5.6/b-colvis-1.5.6/b-html5-1.5.6/b-print-1.5.6/cr-1.5.0/fc-3.2.5/fh-3.1.4/kt-2.5.0/r-2.2.2/sc-2.0.0/datatables.min.css"/>
+      href="/assets/libs/datatables.min.css"/>
 
 <script type="text/javascript"
-        src="https://cdn.datatables.net/v/bs4/jszip-2.5.0/dt-1.10.18/b-1.5.6/b-colvis-1.5.6/b-html5-1.5.6/b-print-1.5.6/cr-1.5.0/kt-2.5.0/datatables.min.js"></script>
+        src="/assets/libs/datatables.min.js"></script>
 
 <script type="text/javascript"
-        src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.1/js/tempusdominus-bootstrap-4.min.js"></script>
+        src="/assets/libs/tempusdominus-bootstrap-4.min.js"></script>
 <link rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.1/css/tempusdominus-bootstrap-4.min.css"/>
+      href="/assets/libs/tempusdominus-bootstrap-4.min.css"/>
 
 <script type="module" src="https://unpkg.com/ionicons@4.5.10-0/dist/ionicons/ionicons.esm.js"></script>
 <script nomodule="" src="https://unpkg.com/ionicons@4.5.10-0/dist/ionicons/ionicons.js"></script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.10/js/bootstrap-select.min.js"
+
+<script src="/assets/libs/bootstrap-select.min.js"
         integrity="sha256-FXzZGmaRFZngOjUKy3lWZJq/MflaMpffBbu3lPT0izE=" crossorigin="anonymous"></script>
 
-<script>
-    const App = new Vue({
-        el: '#app',
-        data: {
-            table_loading: true
-        },
-        mounted: function () {
-            this.$nextTick(init(this));
-        }
-    });
+<script src="/assets/index.js"></script>
 
-
-    function init(App) {
-        App.table = $('#main_table').DataTable({
-            "scrollX": true,
-            buttons: ['copy', 'excel', 'pdf', 'print'],
-            colReorder: true,
-            keys: true
-        });
-
-        App.table.buttons(0, null).containers().appendTo($('#table_buttons'));
-
-        App.table.ajax.url("/api/temp").load(function () {
-            App.table_loading = false;
-        });
-
-        $('#datetime_from').datetimepicker({
-            useCurrent: false
-        });
-        $('#datetime_to').datetimepicker({
-            useCurrent: false
-        });
-        $('#datetime_from').datetimepicker('maxDate', moment());
-        $('#datetime_to').datetimepicker('maxDate', moment());
-        $("#datetime_from").on("change.datetimepicker", function (e) {
-            $('#datetime_to').datetimepicker('minDate', e.date);
-        });
-        $("#datetime_to").on("change.datetimepicker", function (e) {
-            $('#datetime_from').datetimepicker('maxDate', e.date);
-            console.log(e.date)
-        });
-
-        $('.my-select').selectpicker();
-    }
-</script>
 </body>
 </html>

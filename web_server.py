@@ -1,15 +1,16 @@
 import os
-
-from flask import Flask, abort, send_file
+from flask import Flask, request, redirect
 from flask_httpauth import HTTPBasicAuth
-from web_interface.web_homepage import homepage, genTable
-from web_interface.web_jobview import jobview
-from utils.database import Database
+from web_interface.rest_api import *
 from config import config
 
 app = Flask(__name__)
 auth = HTTPBasicAuth()
 
+
+#########################################
+# Auth & Frontend HTML Router
+#########################################
 
 @auth.verify_password
 def verify_password(username, password):
@@ -21,53 +22,95 @@ def verify_password(username, password):
 @app.route('/')
 @auth.login_required
 def app_homepage():
-    return homepage()
+    with open(os.getcwd() + '\\web_interface\\assets\\index.html', 'r') as file:
+        data = file.read()
+    return data
 
 
 @app.route('/job/<job_id>')
 @auth.login_required
-def app_job_view(job_id):
-    return jobview(job_id)
+def app_job(job_id):
+    with open(os.getcwd() + '\\web_interface\\assets\\jobview.html', 'r') as file:
+        data = file.read()
+    return data
 
 
-@app.route('/api/job_info/<job_id>')
+@app.route('/job_guid_reroute/', methods=['POST'])
 @auth.login_required
-def api_job_info(job_id):
-    # Connect to the database (will setup if not existing)
+def app_job_guid():
     db = Database()
+    if "GUID" in request.form:
+        job_id = db.getDB_ID(request.form["GUID"])
+        db.quit()
+        if job_id is None:
+            abort(404)
+        return redirect("/job/" + str(job_id), code=303)
 
-    path = db.getFile(job_id)
-
-    db.quit()
-
-    if path is None:
-        abort(404)
-
-    return send_file(path, as_attachment=True)
-
-
-@app.route('/api/temp/')
-@auth.login_required
-def api_temp():
-    return genTable()
-
-
-@app.route('/api/jobs_on_date/<given_date>')
-@auth.login_required
-def api_jobs_on_date(given_date):
-    return "API: JSON of Dates"
-
-
-@app.route('/api/timeline')
-@auth.login_required
-def api_timeline():
-    return "API: JSON of Dates"
+    abort(400)
 
 
 @app.route('/assets/<name>')
 @auth.login_required
 def assets(name):
-    return send_file(os.getcwd()+'\\web_interface\\assets\\'+name)
+    return send_file(os.getcwd() + '\\web_interface\\assets\\' + name)
 
 
-app.run()  # Start the Server
+@app.route('/assets/libs/<name>')
+@auth.login_required
+def assets_libs(name):
+    return send_file(os.getcwd() + '\\web_interface\\assets\\libs\\' + name)
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return send_file(os.getcwd() + '\\web_interface\\assets\\404.html'), 404
+
+
+#########################################
+# REST API
+#########################################
+
+@app.route('/api/job_download/<job_guid>')
+@auth.login_required
+def flask_api_job_download(job_guid):
+    # Download for job given GUID
+    return send_file(api_job_file(job_guid, True), as_attachment=True)
+
+
+@app.route('/api/job_download/db_id/<job_id>')
+@auth.login_required
+def flask_api_job_download_db(job_id):
+    # Download for job given DB ID
+    return send_file(api_job_file(job_id, False), as_attachment=True)
+
+
+@app.route('/api/job_info/<job_guid>')
+@auth.login_required
+def flask_api_job_info(job_guid):
+    # Info for a job given GUID
+    return api_job_info(job_guid, True)
+
+
+@app.route('/api/job_info/db_id/<job_id>')
+@auth.login_required
+def flask_api_job_info_db(job_id):
+    # Info for a job given DB ID
+    return api_job_info(job_id, False)
+
+
+# Weird routing glitch w/ XHR requests - specify both forms
+@app.route('/api/job_search/', methods=['POST'])
+@app.route('/api/job_search', methods=['POST'])
+@auth.login_required
+def flask_api_job_search():
+    return api_job_search()
+
+
+@app.route('/api/entries')
+@auth.login_required
+def flask_api_entries():
+    return api_entries()
+
+
+# Start the Server
+app.run(host=config.get('Host'), port=config.get('Port'))
