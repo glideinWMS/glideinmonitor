@@ -22,7 +22,7 @@ def verify_password(username, password):
 @app.route('/')
 @auth.login_required
 def app_homepage():
-    with open(os.getcwd() + '\\web_interface\\assets\\index.html', 'r') as file:
+    with open(os.path.join(os.getcwd(), 'web_interface', 'assets', 'index.html'), 'r') as file:
         data = file.read()
     return data
 
@@ -30,7 +30,7 @@ def app_homepage():
 @app.route('/job/<job_id>')
 @auth.login_required
 def app_job(job_id):
-    with open(os.getcwd() + '\\web_interface\\assets\\jobview.html', 'r') as file:
+    with open(os.path.join(os.getcwd(), 'web_interface', 'assets', 'jobview.html'), 'r') as file:
         data = file.read()
     return data
 
@@ -52,18 +52,18 @@ def app_job_guid():
 @app.route('/assets/<name>')
 @auth.login_required
 def assets(name):
-    return send_file(os.getcwd() + '\\web_interface\\assets\\' + name)
+    return send_file(os.path.join(os.getcwd(), 'web_interface', 'assets', name))
 
 
 @app.route('/assets/libs/<name>')
 @auth.login_required
 def assets_libs(name):
-    return send_file(os.getcwd() + '\\web_interface\\assets\\libs\\' + name)
+    return send_file(os.path.join(os.getcwd(), 'web_interface', 'assets', 'libs', name))
 
 
 @app.errorhandler(404)
 def page_not_found(e):
-    return send_file(os.getcwd() + '\\web_interface\\assets\\404.html'), 404
+    return send_file(os.path.join(os.getcwd(), 'web_interface', 'assets', '404.html')), 404
 
 
 #########################################
