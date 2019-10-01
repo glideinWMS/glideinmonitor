@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, redirect
+from flask import redirect
 from flask_httpauth import HTTPBasicAuth
 from web_interface.rest_api import *
 from utils.config import config
