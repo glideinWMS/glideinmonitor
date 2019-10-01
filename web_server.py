@@ -1,6 +1,9 @@
 import os
+import sys
+import datetime
 from flask import redirect
 from flask_httpauth import HTTPBasicAuth
+
 from web_interface.rest_api import *
 from utils.config import config
 
@@ -111,6 +114,14 @@ def flask_api_job_search():
 def flask_api_entries():
     return api_entries()
 
+
+# Redirect Flask output to log file
+log_location_dir = os.path.join(config['Log_Dir'], 'server')
+if not os.path.exists(log_location_dir):
+    os.makedirs(log_location_dir)
+log_location = os.path.join(log_location_dir, datetime.datetime.now().strftime("%Y-%m-%d") + ".txt")
+sys.stderr = open(log_location, "a")
+sys.stdout = open(log_location, "a")
 
 # Start the Server
 app.run(host=config.get('Host'), port=config.get('Port'))

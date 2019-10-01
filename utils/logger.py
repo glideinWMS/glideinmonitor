@@ -1,5 +1,7 @@
-from utils.config import config
 import datetime
+import os
+
+from utils.config import config
 
 
 def log(error_level, message):
@@ -15,5 +17,9 @@ def log(error_level, message):
             return
 
     # Write to error log
-    with open(config['Log_Dir'] + datetime.datetime.now().strftime("/%Y-%m-%d") + ".txt", "a") as log_file:
-        log_file.write(error_level + " - " + str(datetime.datetime.now()) + " - " + message + "\n")
+    log_location_dir = os.path.join(config['Log_Dir'], 'indexer')
+    if not os.path.exists(log_location_dir):
+        os.makedirs(log_location_dir)
+    log_location = os.path.join(log_location_dir, datetime.datetime.now().strftime("%Y-%m-%d") + ".txt")
+    with open(log_location, "a") as log_file:
+        log_file.write(error_level + " - " + str(datetime.datetime.now().timestamp()) + " - " + message + "\n")
