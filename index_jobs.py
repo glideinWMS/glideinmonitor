@@ -3,6 +3,7 @@ import mmap
 import os
 import tarfile
 import time
+import pathlib
 
 from config import config
 from utils.database import Database
@@ -100,6 +101,15 @@ def directory_jobs(start_path):
 
 
 def begin_indexing():
+    # Check for index job lock
+    lock_location = os.path.join(config['Saved_Log_Dir'], "index_lock")
+    if not pathlib.Path(lock_location).exists():
+        pathlib.Path(lock_location).touch()
+    else:
+        # Job index already running/did not complete
+        log("ERROR", "Lock file present in saved log directory")
+        return
+
     # Entry point for indexing
     db = Database()
     jobs_updated = 0
@@ -157,6 +167,9 @@ def begin_indexing():
 
     # Indexing complete
     db.commit()
+
+    # Delete the lock file
+    os.remove(pathlib.Path(lock_location))
 
     log("INFO", "Jobs added/updated " + str(jobs_updated))
     log("INFO", "Indexing Complete Time: " + str(current_milli_time()))
