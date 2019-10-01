@@ -124,7 +124,7 @@ def begin_indexing():
     # Iterate through each job checking the database if it needs to be updated
     for job_name, job_data in tree.items():
         # Skip entries that are missing an err/out file
-        if job_data["err_file_path"] is None or job_data["out_file_path"] is None:
+        if "err_file_path" not in job_data or "out_file_path" not in job_data:
             log("INFO", "Missing ERR/OUT file for entry - jobID: " +
                 job_data["entry_name"] + " - " + str(job_data["job_id"]))
             continue
