@@ -1,6 +1,7 @@
 import os
 import sys
 import datetime
+import hashlib
 from flask import redirect
 from flask_httpauth import HTTPBasicAuth
 
@@ -18,7 +19,7 @@ auth = HTTPBasicAuth()
 @auth.verify_password
 def verify_password(username, password):
     if username in config.get('Users'):
-        return config.get('Users').get(username) == password
+        return config.get('Users').get(username) == hashlib.md5(password.encode()).hexdigest()
     return False
 
 
