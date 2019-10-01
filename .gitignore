@@ -1,3 +1,9 @@
 __pycache__/
 .idea
 config.py
+dist
+build
+dependency_links.txt
+PKG-INFO
+SOURCES.txt
+top_level.txt
