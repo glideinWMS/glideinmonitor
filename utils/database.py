@@ -1,24 +1,70 @@
 import sqlite3
+import mysql.connector
 from utils.config import config
 from utils.logger import log
 
 
 class Database:
     def __init__(self):
-        self.conn = sqlite3.connect(config['DB_Dir'] + '/database.sqlite')
+        # Connect to SQLite unless specified otherwise in the config file
+        if config["db"]["type"] == "sqlite":
+            # SQLite Database
+            self.conn = sqlite3.connect(config["db"]["dir"] + '/database.sqlite')
 
-        # Check if index table exists
-        db_cursor = self.conn.cursor()
-        db_cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='file_index';")
+            # Check if index table exists
+            db_cursor = self.conn.cursor()
+            db_cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='file_index';")
 
-        if db_cursor.fetchone() is None:
-            # It doesn't, create it
-            log("INFO", "Creating new database")
+            if db_cursor.fetchone() is None:
+                # It doesn't, create it
+                log("INFO", "Creating new SQLite database")
 
-            script_file = open("utils/databaseTableCreation.sql", 'r')
-            script = script_file.read()
-            script_file.close()
-            db_cursor.executescript(script)
+                script_file = open("utils/sqliteTableCreation.sql", 'r')
+                script = script_file.read()
+                script_file.close()
+                db_cursor.executescript(script)
+        else:
+            # MySQL Database
+            try:
+                self.conn = mysql.connector.connect(
+                    host=config["db"]["host"],
+                    user=config["db"]["user"],
+                    passwd=config["db"]["pass"],
+                    database=config["db"]["db_name"]
+                )
+
+                mycursor = self.conn.cursor()
+            except mysql.connector.errors.ProgrammingError:
+                # Create the database
+                log("INFO", "Creating new MySQL Database")
+                mydb = mysql.connector.connect(
+                    host=config["db"]["host"],
+                    user=config["db"]["user"],
+                    passwd=config["db"]["pass"]
+                )
+
+                mycursor = mydb.cursor()
+                mycursor.execute("CREATE DATABASE " + config["db"]["db_name"])
+
+                self.conn = mysql.connector.connect(
+                    host=config["db"]["host"],
+                    user=config["db"]["user"],
+                    passwd=config["db"]["pass"],
+                    database=config["db"]["db_name"]
+                )
+
+                mycursor = self.conn.cursor()
+
+            # Check if the table exists
+            mycursor.execute("SHOW TABLES")
+
+            if ('file_index',) not in mycursor:
+                # Create table
+                log("INFO", "Creating MySQL File Index table")
+                script_file = open("utils/mysqlTableCreation.sql", 'r')
+                script = script_file.read()
+                script_file.close()
+                mycursor.execute(script)
 
     def dict_factory(self, cursor, row):
         d = {}
@@ -55,6 +101,12 @@ class Database:
         # Adds a job to the database
 
         cur = self.conn.cursor()
+
+        # Escape the path (MySQL only)
+        try:
+            path = self.conn.converter.escape(path)
+        except AttributeError:
+            pass
 
         # Check if the job is in the database already
         cur.execute(
@@ -165,7 +217,7 @@ class Database:
 
     def getInfo(self, jobID, given_guid):
         # Checks if a job exists in the database
-        cur = self.conn.cursor()
+        cur = self.conn.cursor(dictionary=True)
         cur.row_factory = self.dict_factory
 
         # Do directory/file names need to be sanitized?
