@@ -2,7 +2,7 @@ import os
 from flask import Flask, request, redirect
 from flask_httpauth import HTTPBasicAuth
 from web_interface.rest_api import *
-from config import config
+from utils.config import config
 
 app = Flask(__name__)
 auth = HTTPBasicAuth()

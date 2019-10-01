@@ -5,7 +5,7 @@ import tarfile
 import time
 import pathlib
 
-from config import config
+from utils.config import config
 from utils.database import Database
 from utils.logger import log
 

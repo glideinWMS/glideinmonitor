@@ -1,0 +1,12 @@
+{
+  "GWMS_Log_Dir": "C:\\Users\\Thomas\\Fermilab\\Indexing Sandbox\\NOSYNC_glidein_gfactory_instance",
+  "Saved_Log_Dir": "C:\\Users\\Thomas\\Fermilab\\Indexing Sandbox\\NOSYNC_SavedLogs",
+  "DB_Dir": "C:\\Users\\Thomas\\Fermilab\\Indexing Sandbox\\NOSYNC_DBLOG",
+  "Log_Dir": "C:\\Users\\Thomas\\Fermilab\\Indexing Sandbox\\NOSYNC_DBLOG",
+  "Warn_Level": "INFO",
+  "Users": {
+    "admin": "admin"
+  },
+  "Port": 8888,
+  "Host": "127.0.0.1"
+}

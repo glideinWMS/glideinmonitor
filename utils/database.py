@@ -1,5 +1,5 @@
 import sqlite3
-from config import config
+from utils.config import config
 from utils.logger import log
 
 

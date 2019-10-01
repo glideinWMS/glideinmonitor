@@ -1,6 +1,6 @@
 __pycache__/
 .idea
-config.py
+config.json
 dist
 build
 dependency_links.txt
