@@ -98,6 +98,11 @@ function init(App) {
         "initComplete": function () {
             // Add buttons
             App.table.buttons(0, null).containers().appendTo($('#table_buttons'));
+
+            // Click to format table
+            setTimeout(function () {
+                $("#main_table_wrapper .table .sorting").click()
+            }, 10);
         },
         "ajax": {
             "url": "/api/job_search",
