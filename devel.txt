@@ -27,6 +27,16 @@ Development directory tree:
 - tests: unit tests, ...
 - lib: common python files
 
+Maybe things should be rearranged, according to the suggestions in:
+https://realpython.com/python-application-layouts/
+https://flask.palletsprojects.com/en/1.1.x/tutorial/layout/
+- glideinmonitor
+-- lib
+-- webserver
+--- static
+--- templates
+-- indexer
+(and start pycharm in the root directory, not above like GWMS)
 
 On installation:
 /etc/glideinmonitor
@@ -43,6 +53,8 @@ On installation:
 
 
 TODOs:
+1. evaluate different dir structure above
+
 distribution via distutils
 RPM generated from there
 Dockerfiles
