@@ -1,0 +1,115 @@
+#!/bin/bash
+# condor   This is the glideinmonitor indexer startup script
+# chkconfig: 35 90 30
+## alt: chkconfig: 345 99 9
+# description: Starts and stops the glidienmonitor indexer
+
+# Emulate function library.
+success() {
+    echo -en "\\033[60G[\033[32mOK\033[0m]"
+    return 0
+}
+
+failure() {
+    echo -en "\\033[60G[\033[31mFAILED\033[0m]"
+    return 1
+}
+
+# LSB Exit codes for status:
+#0    program is running or service is OK
+#1    program is dead and /var/run pid file exists
+#2    program is dead and /var/lock lock file exists
+#3    program is not running
+#4    program or service status is unknown
+#5-99    reserved for future LSB use
+#100-149    reserved for distribution use
+#150-199    reserved for application use
+#200-254    reserved
+# LSB Exit codes for non status:
+#1    generic or unspecified error (current practice)
+#2    invalid or excess argument(s)
+#3    unimplemented feature (for example, "reload")
+#4    user had insufficient privilege
+#5    program is not installed
+#6    program is not configured
+#7    program is not running
+#8-99    reserved for future LSB use
+#100-149    reserved for distribution use
+#150-199    reserved for application use
+#200-254    reserved
+RET_OK=0
+RET_ERROR=1
+RET_STATUS_DEADWPIDFILE=1
+RET_STATUS_DEADWLOCK=2
+RET_STATUS_NOT_RUNNING=3
+RET_STATUS_UNKNOWN=4
+RET_BAD_SYNTAX=2
+RET_NOT_IMPLEMENTED=3
+RET_NO_PRIVILEGE=4
+RET_NOT_INSTALLED=5
+RET_NOT_CONFIGURED=6
+RET_NOT_RUNNING=7
+
+. /etc/rc.d/init.d/functions
+
+[ -f /etc/sysconfig/glideinmonitor ] && . /etc/sysconfig/glideinmonitor
+
+LOCK=/var/lock/subsys/glideinmonitor-indexer
+RETVAL=0
+BINARY=/usr/sbin/glideinmonitor-indexer
+
+help_usage() {
+}
+
+start() {
+    action $"Enabling Glidein Monitor Indexer:" "$BINARY" && touch "$LOCK"
+    RETVAL=$?
+}
+
+stop() {
+    action $"Disabling Glidein Monitor Indexer:" rm -f "$LOCK"
+    RETVAL=$?
+}
+
+restart() {
+    stop
+    start
+}
+
+status() {
+    if [ -f $LOCK ]; then
+        renew_status="enabled"
+        RETVAL=$RET_OK
+    else
+        renew_status="disabled"
+        RETVAL=$RET_STATUS_NOT_RUNNING
+    fi
+    echo "Frontend and pilot proxy renewal is $renew_status."
+}
+
+case $1  in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  restart|force-reload)
+        restart
+        ;;
+  reload)
+        # cron, will reload at the next invocation
+        ;;
+  condrestart)
+        [ ! -f "$LOCK" ] && restart
+        ;;
+  status)
+        status
+        ;;
+  *)
+        #help_usage
+        echo $"Usage: $0 {start|stop|status|restart|reload|force-reload|condrestart}"
+        exit $RET_NOT_IMPLEMENTED
+esac
+
+exit $RETVAL 

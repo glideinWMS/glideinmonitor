@@ -1,0 +1,16 @@
+[Unit]
+Description=Glidein Monitor Indexer
+#Requires=
+After=syslog.target network.target
+Wants=network.target
+Documentation="https://github.com/glideinWMS/glideinmonitor"
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/glideinmonitor-indexer start
+#ExecStop=/usr/sbin/glideinmonitor-indexer stop
+#ExecReload=/usr/sbin/glideinmonitor-indexer reload $MAINPID
+
+[Install]
+WantedBy=multi-user.target
+
