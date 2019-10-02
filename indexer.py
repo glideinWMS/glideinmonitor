@@ -5,9 +5,9 @@ import tarfile
 import time
 import pathlib
 
-from utils.config import config
-from utils.database import Database
-from utils.logger import log
+from glideinmonitor.lib.config import config
+from glideinmonitor.lib.database import Database
+from glideinmonitor.lib.logger import log
 
 
 def current_milli_time():
@@ -65,16 +65,16 @@ def directory_jobs(start_path):
 
                 # Try and get out specific information
                 if job_type == ".out":
-                    with open(file_path) as f:
+                    with open(file_path) as f2:
                         # Get timestamp (should be first line)
-                        first_line = f.readline()
+                        first_line = f2.readline()
                         try:
                             last_known_timestamp = int(first_line.split('(', 1)[1].split(')')[0])
                         except IndexError:
                             pass
 
                         # Get the GUID (should be second line)
-                        second_line = f.readline()
+                        second_line = f2.readline()
                         try:
                             guid = second_line.split('(', 1)[1].split(')')[0]
                         except IndexError:

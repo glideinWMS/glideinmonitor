@@ -5,8 +5,9 @@ import hashlib
 from flask import redirect
 from flask_httpauth import HTTPBasicAuth
 
-from web_interface.rest_api import *
-from utils.config import config
+# TODO: explicit import to understand better scope
+from glideinmonitor.web_interface.rest_api import *
+from glideinmonitor.lib.config import config
 
 app = Flask(__name__)
 auth = HTTPBasicAuth()

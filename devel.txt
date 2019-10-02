@@ -1,0 +1,70 @@
+File w/ project info for developers:
+- rationale
+- TODOs
+- notes
+
+Directories:
+- there are 2 binaries provided glideinmonitor-indexer, glideinmonitor-webserver
+- corrently these are packaged and distributed together because they are very small but people can decide to use une, the other or both
+- serives should not be started by default (so the part not used is not causing load or interfering)
+- RPM install: only one of each max can run on the system (OK for lock and config files, ... to assume that)
+- still keep all files separate to ease future desire to split the packages:
+-- common (used by both webserver and indexer)
+-- webserver
+-- indexer
+
+1 pkg
+2 services
+3 containers (2 + DB)
+yum release in OSG
+
+
+Development directory tree:
+- pkg: packaging related files, RPMs, Docker files, orchestration
+- docs: documentation
+- webserver: -webserver, including python and static assets
+- indexer: -indexer
+- tests: unit tests, ...
+- lib: common python files
+
+
+On installation:
+/etc/glideinmonitor
+/etc/glideinmonitor-webserver
+/etc/glideinmonitor-indexer
+/var/lock/subsys/glideinmonitor-indexer (if it should run)
+/var/lock/subsys/glideinmonitor-indexer.running (to avoid 2 instances running)
+/var/lib/glideinmonitor
+/var/lib/glideinmonitor/archive
+/var/lib/glideinmonitor/upload
+/var/lib/glideinmonitor/upload/filtered
+/var/lib/glideinmonitor/db
+/var/lib/glideinmonitor/filters/
+
+
+TODOs:
+distribution via distutils
+RPM generated from there
+Dockerfiles
+
+support -c CONFIGFILE
+default config 
+updated w/ common config
+updated w/ specific config (contains path to common config)
+json or yaml or ini?
+
+Support 3rd log file
+
+Add (sanitation) filters mechanism
+- noop filter
+- "compose" filter (splits included files and runs filter on those files)
+- filters get path, dest (dir or path?)  and file name (may trigger special actions in the filter, optional)
+- compose filter will handle putting things back together once the components are filtered
+- allow parallel execution
+- beware of atomicity (use mv not to have partial files)
+
+Fix path in json file (system independent)
+
+Use python logging in stdlib for log files
+
+

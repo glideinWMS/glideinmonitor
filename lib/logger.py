@@ -1,18 +1,20 @@
 import datetime
 import os
 
-from utils.config import config
+from glideinmonitor.lib.config import config
 
+
+# TODO: use python std logging
 
 def log(error_level, message):
-    if config["Warn_Level"] == "NONE":
+    if config["Log_Level"] == "NONE":
         return
 
-    if config["Warn_Level"] == "ERROR":
+    if config["Log_Level"] == "ERROR":
         if error_level != "ERROR":
             return
 
-    if config["Warn_Level"] == "WARNING":
+    if config["Log_Level"] == "WARNING":
         if error_level == "INFO":
             return
 

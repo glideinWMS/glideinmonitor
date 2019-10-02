@@ -1,7 +1,7 @@
 import sqlite3
 import mysql.connector
-from utils.config import config
-from utils.logger import log
+from glideinmonitor.lib.config import config
+from glideinmonitor.lib.logger import log
 
 
 class Database:

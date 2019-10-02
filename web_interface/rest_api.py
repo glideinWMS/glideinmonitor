@@ -1,7 +1,7 @@
 from flask import Flask, abort, send_file, request
 import json
 
-from utils.database import *
+from glideinmonitor.lib.database import *
 
 
 def api_job_file(job_id, given_guid):
@@ -16,6 +16,7 @@ def api_job_file(job_id, given_guid):
 
     return path
 
+
 def api_job_info(job_id, given_guid):
     # Provides info on a job in a JSON format
     db = Database()
@@ -27,6 +28,7 @@ def api_job_info(job_id, given_guid):
         abort(404)
 
     return json.dumps(data)
+
 
 def api_job_search():
     # Returns list of jobs given timestamp (from,to) and entry name(s) up to 50k
