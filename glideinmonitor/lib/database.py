@@ -1,3 +1,4 @@
+import os
 import sqlite3
 import mysql.connector
 from glideinmonitor.lib.config import config
@@ -19,7 +20,8 @@ class Database:
                 # It doesn't, create it
                 log("INFO", "Creating new SQLite database")
 
-                script_file = open("utils/sqliteTableCreation.sql", 'r')
+                script_file = open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "sqliteTableCreation.sql"),
+                                   'r')
                 script = script_file.read()
                 script_file.close()
                 db_cursor.executescript(script)
@@ -217,7 +219,11 @@ class Database:
 
     def getInfo(self, jobID, given_guid):
         # Checks if a job exists in the database
-        cur = self.conn.cursor(dictionary=True)
+        try:
+            cur = self.conn.cursor(dictionary=True)
+        except TypeError:
+            cur = self.conn.cursor()
+
         cur.row_factory = self.dict_factory
 
         # Do directory/file names need to be sanitized?
