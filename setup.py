@@ -42,7 +42,7 @@ setup(
     py_modules=["webserver", "indexer", "lib"],
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
     include_package_data=True,
-    package_data={'glideinmonitor': ['*.sql', '*.html', '*.css', '*.js', 'default_config.json']},
+    package_data={'': ['*.sql', '*.html', '*.css', '*.js', 'default_config.json']},
 
     python_requires='>=3.5',
     install_requires=['flask'],
