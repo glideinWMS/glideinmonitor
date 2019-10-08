@@ -101,7 +101,7 @@ def directory_jobs(start_path):
     return tree
 
 
-def begin_indexing():
+def begin_indexing(args):
     # Check for index job lock
     lock_location = os.path.join(Config.get('Saved_Log_Dir'), "index_lock")
     if not pathlib.Path(lock_location).exists():
@@ -181,14 +181,19 @@ def begin_indexing():
 # Entry point
 ####
 
-# Parse command line arguments (if any)
-parser = argparse.ArgumentParser(description="GlideinMonitor's indexing script for GlideIn .out & .err files")
-parser.add_argument('-c', help="Path to Config File")
-parser.add_argument('-f', help="Ignore the lock file and force an index anyway", action='store_true')
-args = parser.parse_args()
+def main():
+    # Parse command line arguments (if any)
+    parser = argparse.ArgumentParser(description="GlideinMonitor's indexing script for GlideIn .out & .err files")
+    parser.add_argument('-c', help="Path to Config File")
+    parser.add_argument('-f', help="Ignore the lock file and force an index anyway", action='store_true')
+    args = parser.parse_args()
 
-# Process config file
-Config.init(args.c)
+    # Process config file
+    Config.init(args.c)
 
-# Begin Indexing
-begin_indexing()
+    # Begin Indexing
+    begin_indexing(args)
+
+
+if __name__ == "__main__":
+    main()

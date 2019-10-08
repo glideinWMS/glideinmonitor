@@ -13,14 +13,6 @@ from glideinmonitor.lib.config import Config
 app = Flask(__name__)
 auth = HTTPBasicAuth()
 
-# Parse command line arguments (if any)
-parser = argparse.ArgumentParser(description="GlideinMonitor's Flask Web Server")
-parser.add_argument('-c', help="Path to Config File")
-args = parser.parse_args()
-
-# Process config file
-Config.init(args.c)
-
 
 #########################################
 # Auth & Frontend HTML Router
@@ -126,13 +118,26 @@ def flask_api_entries():
     return api_entries()
 
 
-# Redirect Flask output to log file
-log_location_dir = os.path.join(Config.get('Log_Dir'), 'server')
-if not os.path.exists(log_location_dir):
-    os.makedirs(log_location_dir)
-log_location = os.path.join(log_location_dir, datetime.datetime.now().strftime("%Y-%m-%d") + ".txt")
-sys.stderr = open(log_location, "a")
-sys.stdout = open(log_location, "a")
+def main():
+    # Parse command line arguments (if any)
+    parser = argparse.ArgumentParser(description="GlideinMonitor's Flask Web Server")
+    parser.add_argument('-c', help="Path to Config File")
+    args = parser.parse_args()
 
-# Start the Server
-app.run(host=Config.get('Host'), port=Config.get('Port'))
+    # Process config file
+    Config.init(args.c)
+
+    # Redirect Flask output to log file
+    log_location_dir = os.path.join(Config.get('Log_Dir'), 'server')
+    if not os.path.exists(log_location_dir):
+        os.makedirs(log_location_dir)
+    log_location = os.path.join(log_location_dir, datetime.datetime.now().strftime("%Y-%m-%d") + ".txt")
+    sys.stderr = open(log_location, "a")
+    sys.stdout = open(log_location, "a")
+
+    # Start the Server
+    app.run(host=Config.get('Host'), port=Config.get('Port'))
+
+
+if __name__ == "__main__":
+    main()
