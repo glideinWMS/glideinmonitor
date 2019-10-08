@@ -63,7 +63,8 @@ class Database:
             if ('file_index',) not in mycursor:
                 # Create table
                 log("INFO", "Creating MySQL File Index table")
-                script_file = open("utils/mysqlTableCreation.sql", 'r')
+                script_file = open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "mysqlTableCreation.sql"),
+                                   'r')
                 script = script_file.read()
                 script_file.close()
                 mycursor.execute(script)
