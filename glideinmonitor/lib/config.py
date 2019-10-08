@@ -1,5 +1,7 @@
 from pathlib import Path
 import json
+import os
+import glideinmonitor
 
 
 class Config:
@@ -8,11 +10,36 @@ class Config:
     @classmethod
     def init(cls, config_path=None):
         if config_path is None:
-            config_contents = Path("config.json").read_text()
+            default_config_path = os.path.join(os.path.dirname(glideinmonitor.__file__), "default_config.json")
+            config_contents = Path(default_config_path).read_text()
         else:
             config_contents = Path(config_path).read_text()
 
-        cls.config_data = json.loads(config_contents)
+        curr = json.loads(config_contents)
+
+        if "parent_config" in curr and curr["parent_config"] != "":
+            parent = cls.dive(curr["parent_config"])
+
+            curr.update(parent)
+
+            cls.config_data = curr
+        else:
+            cls.config_data = curr
+
+    @classmethod
+    def dive(cls, config_path):
+        config_contents = Path(config_path).read_text()
+
+        curr = json.loads(config_contents)
+
+        if "parent_config" in curr and curr["parent_config"] != "":
+            parent = cls.dive(curr["parent_config"])
+
+            curr.update(parent)
+
+            return curr
+        else:
+            return curr
 
     @classmethod
     def db(cls, key):
