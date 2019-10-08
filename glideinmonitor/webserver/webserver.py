@@ -6,7 +6,7 @@ from flask import redirect
 from flask_httpauth import HTTPBasicAuth
 
 # TODO: explicit import to understand better scope
-from glideinmonitor.web_interface.rest_api import *
+from glideinmonitor.webserver.rest_api import *
 from glideinmonitor.lib.config import config
 
 app = Flask(__name__)

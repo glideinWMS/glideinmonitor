@@ -1,8 +1,10 @@
-__pycache__/
 .idea
+venv/
+*.pyc
+__pycache__/
 config.json
-build
-dist
+build/
+dist/
 dependency_links.txt
 PKG-INFO
 SOURCES.txt
