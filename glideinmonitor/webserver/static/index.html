@@ -1,210 +1,190 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>GWMS Factory Monitoring</title>
+  <meta charset="UTF-8">
+  <title>GWMS Factory Monitoring</title>
 
-    <link href="/assets/libs/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <link rel="stylesheet"
-          href="/assets/libs/tempusdominus-bootstrap-4.min.css"
-          integrity="sha256-XPTBwC3SBoWHSmKasAk01c08M6sIA5gF5+sRxqak2Qs=" crossorigin="anonymous"/>
-    <link rel="stylesheet" type="text/css"
-          href="/assets/libs/datatables.min.css"/>
-    <link rel="stylesheet"
-          href="/assets/libs/bootstrap-select.min.css">
+  <link href="/assets/libs/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+  <link rel="stylesheet"
+        href="/assets/libs/tempusdominus-bootstrap-4.min.css" crossorigin="anonymous"/>
+  <link rel="stylesheet" type="text/css"
+        href="/assets/libs/datatables.min.css"/>
+  <link rel="stylesheet"
+        href="/assets/libs/bootstrap-select.min.css">
 
-    <style>
-        .container {
-            padding-top: 50px;
-        }
+  <style>
+    .container {
+      padding-top: 50px;
+    }
 
-        table.dataTable tbody th,
-        table.dataTable tbody td {
-            white-space: nowrap;
-        }
-    </style>
+    table.dataTable tbody th,
+    table.dataTable tbody td {
+      white-space: nowrap;
+    }
+  </style>
 </head>
 <body>
 <div id="app">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container" style="padding-top: 10px; padding-bottom: 10px">
-            <a class="navbar-brand" href="/">GWMS Factory Job Logs</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbarCollapse"
-                    aria-controls="mainNavbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container" style="padding-top: 10px; padding-bottom: 10px">
+      <a class="navbar-brand" href="/">GWMS Factory Job Logs</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbarCollapse"
+              aria-controls="mainNavbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="mainNavbarCollapse">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+          </li>
+        </ul>
+        <form class="form-inline my-2 my-md-0" method="post" action="/job_guid_reroute/">
+          <input class="form-control" type="text" name="GUID" placeholder="Goto GUID" aria-label="Search">
+          <input type="submit" style="display: none"/>
+        </form>
+      </div>
+    </div>
+  </nav>
+  <div class="container">
+    <!-- Header Text -->
+    <h1>Factory Monitoring Job View</h1>
+    <p>Filters below alter the data in the table</p>
+    <p>Click search once you have narrowed the query</p>
+
+    <!-- Error Modal -->
+    <div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+         aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">That's Unlucky!</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
             </button>
-
-            <div class="collapse navbar-collapse" id="mainNavbarCollapse">
-                <ul class="navbar-nav mr-auto">
-                    <li class="nav-item active">
-                        <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
-                    </li>
-                </ul>
-                <form class="form-inline my-2 my-md-0"  method="post" action="/job_guid_reroute/">
-                    <input class="form-control" type="text" name="GUID" placeholder="Goto GUID" aria-label="Search">
-                    <input type="submit" style="display: none" />
-                </form>
-            </div>
+          </div>
+          <div class="modal-body">
+            <span id="errorModalText"></span>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary">Save changes</button>
+          </div>
         </div>
-    </nav>
-    <div class="container">
-        <!-- Header Text -->
-        <h1>Factory Monitoring Job View</h1>
-        <p>Filters below alter the data in the table</p>
-        <p>Click search once you have narrowed the query</p>
-
-        <!-- Error Modal -->
-        <div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-             aria-hidden="true">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">That's Unlucky!</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <span id="errorModalText"></span>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary">Save changes</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class='col-md-4'>
-                <div class="form-group">
-                    Timestamp From
-                    <div class="input-group date" id="datetime_from" data-target-input="nearest">
-                        <input id="datetime_from_input" type="text" class="form-control datetimepicker-input" data-target="#datetime_from"/>
-                        <div class="input-group-append" data-target="#datetime_from" data-toggle="datetimepicker">
-                            <div class="input-group-text">
-                                <ion-icon name="calendar"></ion-icon>
-                            </div>
-                        </div>
-                        <div class="input-group-append">
-                            <div id="datetime_from_clear"  class="input-group-text">
-                                <ion-icon name="trash"></ion-icon>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class='col-md-4'>
-                <div class="form-group">
-                    Timestamp To
-                    <div class="input-group date" id="datetime_to" data-target-input="nearest">
-                        <input id="datetime_to_input" type="text" class="form-control datetimepicker-input" data-target="#datetime_to"/>
-                        <div class="input-group-append" data-target="#datetime_to" data-toggle="datetimepicker">
-                            <div class="input-group-text">
-                                <ion-icon name="calendar"></ion-icon>
-                            </div>
-                        </div>
-                        <div class="input-group-append">
-                            <div id="datetime_to_clear" class="input-group-text">
-                                <ion-icon name="trash"></ion-icon>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class='col-md-4'>
-                <div class="form-group">
-                    Entry Name
-                    <div class="input-group">
-                        <select class="selectpicker" id="select_entry_name" data-live-search="true" multiple>
-                        </select>
-                    </div>
-                </div>
-            </div>
-            <div class='col-md-4'>
-                <button type="button" id="search" class="btn btn-primary btn-lg">Search</button>
-            </div>
-        </div>
-        <hr>
-        <br>
-        <div class="d-flex justify-content-center">
-            <div v-show="table_loading" style="width: 10rem; height: 10rem;" class="spinner-grow" role="status">
-                <span class="sr-only">Loading...</span>
-            </div>
-        </div>
-        <div v-show="!table_loading">
-            <div id="table_buttons"></div>
-            <br>
-            <table id="main_table" class="table" style="width:100%">
-                <thead>
-                <tr>
-                    <th>JobID</th>
-                    <th>FileSize</th>
-                    <th>Timestamp</th>
-                    <th>FrontendUsername</th>
-                    <th>InstanceName</th>
-                    <th>EntryName</th>
-                    <th>MasterLog</th>
-                    <th>StartdLog</th>
-                    <th>StarterLog</th>
-                    <th>StartdHistLog</th>
-                    <th>XML_desc</th>
-                </tr>
-                </thead>
-                <tfoot>
-                <tr>
-                    <th>JobID</th>
-                    <th>FileSize</th>
-                    <th>Timestamp</th>
-                    <th>FrontendUsername</th>
-                    <th>InstanceName</th>
-                    <th>EntryName</th>
-                    <th>MasterLog</th>
-                    <th>StartdLog</th>
-                    <th>StarterLog</th>
-                    <th>StartdHistLog</th>
-                    <th>XML_desc</th>
-                </tr>
-                </tfoot>
-            </table>
-        </div>
+      </div>
     </div>
 
-    <br><br><br>
+    <div class="row">
+      <div class='col-md-4'>
+        <div class="form-group">
+          Timestamp From
+          <div class="input-group date" id="datetime_from" data-target-input="nearest">
+            <input id="datetime_from_input" type="text" class="form-control datetimepicker-input"
+                   data-target="#datetime_from"/>
+            <div class="input-group-append" data-target="#datetime_from" data-toggle="datetimepicker">
+              <div class="input-group-text">
+                <ion-icon name="calendar"></ion-icon>
+              </div>
+            </div>
+            <div class="input-group-append">
+              <div id="datetime_from_clear" class="input-group-text">
+                <ion-icon name="trash"></ion-icon>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class='col-md-4'>
+        <div class="form-group">
+          Timestamp To
+          <div class="input-group date" id="datetime_to" data-target-input="nearest">
+            <input id="datetime_to_input" type="text" class="form-control datetimepicker-input"
+                   data-target="#datetime_to"/>
+            <div class="input-group-append" data-target="#datetime_to" data-toggle="datetimepicker">
+              <div class="input-group-text">
+                <ion-icon name="calendar"></ion-icon>
+              </div>
+            </div>
+            <div class="input-group-append">
+              <div id="datetime_to_clear" class="input-group-text">
+                <ion-icon name="trash"></ion-icon>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class='col-md-4'>
+        <div class="form-group">
+          Entry Name
+          <div class="input-group">
+            <select class="selectpicker" id="select_entry_name" data-live-search="true" multiple>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class='col-md-4'>
+        <button type="button" id="search" class="btn btn-primary btn-lg">Search</button>
+      </div>
+    </div>
+    <hr>
+    <br>
+    <div class="d-flex justify-content-center">
+      <div v-show="table_loading" style="width: 10rem; height: 10rem;" class="spinner-grow" role="status">
+        <span class="sr-only">Loading...</span>
+      </div>
+    </div>
+    <div v-show="!table_loading">
+      <div id="table_buttons"></div>
+      <br>
+      <table id="main_table" class="table" style="width:100%">
+        <thead>
+        <tr>
+          <th>JobID</th>
+          <th>FileSize</th>
+          <th>Timestamp</th>
+          <th>FrontendUsername</th>
+          <th>InstanceName</th>
+          <th>EntryName</th>
+          <th>MasterLog</th>
+          <th>StartdLog</th>
+          <th>StarterLog</th>
+          <th>StartdHistLog</th>
+          <th>XML_desc</th>
+        </tr>
+        </thead>
+        <tfoot>
+        <tr>
+          <th>JobID</th>
+          <th>FileSize</th>
+          <th>Timestamp</th>
+          <th>FrontendUsername</th>
+          <th>InstanceName</th>
+          <th>EntryName</th>
+          <th>MasterLog</th>
+          <th>StartdLog</th>
+          <th>StarterLog</th>
+          <th>StartdHistLog</th>
+          <th>XML_desc</th>
+        </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <br><br><br>
 </div>
-<script src="/assets/libs/jquery.min.js"
-        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
-<script src="/assets/libs/popper.min.js"
-        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
-        crossorigin="anonymous"></script>
-<script src="/assets/libs/bootstrap.min.js"
-        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
-        crossorigin="anonymous"></script>
-
-<script src="/assets/libs/vue.min.js"
-        integrity="sha256-chlNFSVx3TdcQ2Xlw7SvnbLAavAQLO0Y/LBiWX04viY="
-        crossorigin="anonymous"></script>
-
+<script src="/assets/libs/jquery.min.js" crossorigin="anonymous"></script>
+<script src="/assets/libs/popper.min.js" crossorigin="anonymous"></script>
+<script src="/assets/libs/bootstrap.min.js" crossorigin="anonymous"></script>
+<script src="/assets/libs/vue.min.js" crossorigin="anonymous"></script>
 <script type="text/javascript" src="/assets/libs/moment.min.js"></script>
-
-<link rel="stylesheet" type="text/css"
-      href="/assets/libs/datatables.min.css"/>
-
-<script type="text/javascript"
-        src="/assets/libs/datatables.min.js"></script>
-
-<script type="text/javascript"
-        src="/assets/libs/tempusdominus-bootstrap-4.min.js"></script>
-<link rel="stylesheet"
-      href="/assets/libs/tempusdominus-bootstrap-4.min.css"/>
-
+<link rel="stylesheet" type="text/css" href="/assets/libs/datatables.min.css"/>
+<script type="text/javascript" src="/assets/libs/datatables.min.js"></script>
+<script type="text/javascript" src="/assets/libs/tempusdominus-bootstrap-4.min.js"></script>
+<link rel="stylesheet" href="/assets/libs/tempusdominus-bootstrap-4.min.css"/>
 <script type="module" src="https://unpkg.com/ionicons@4.5.10-0/dist/ionicons/ionicons.esm.js"></script>
 <script nomodule="" src="https://unpkg.com/ionicons@4.5.10-0/dist/ionicons/ionicons.js"></script>
-
-
-<script src="/assets/libs/bootstrap-select.min.js"
-        integrity="sha256-FXzZGmaRFZngOjUKy3lWZJq/MflaMpffBbu3lPT0izE=" crossorigin="anonymous"></script>
+<script src="/assets/libs/bootstrap-select.min.js" crossorigin="anonymous"></script>
 
 <script src="/assets/index.js"></script>
 
