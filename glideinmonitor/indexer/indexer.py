@@ -114,12 +114,12 @@ def begin_indexing():
     db = Database()
     jobs_updated = 0
     save_dir = config['Saved_Log_Dir'] + "/" + datetime.datetime.now().strftime("/%Y-%m-%d")
-    log("INFO", "Begin Indexing Time Time: " + str(current_milli_time()))
+    log("INFO", "Begin Indexing")
 
     # Get a dictionary of jobs from the GWMS_Log_Dir directory
     tree = directory_jobs(config['GWMS_Log_Dir'])
 
-    log("INFO", "Directory Listing Completion Time: " + str(current_milli_time()))
+    log("INFO", "Directory Listing Completion")
 
     # Iterate through each job checking the database if it needs to be updated
     for job_name, job_data in tree.items():
@@ -140,7 +140,7 @@ def begin_indexing():
                           "StartdHistoryLog": False, "glidein_activity": False}
             if job_data['err_file_size'] != 0:
                 with open(job_data["err_file_path"], 'rb', 0) as file, \
-                        mmap.mmap(file.fileno(), 0, access=mmap.ACCESS_READ) as s:
+                    mmap.mmap(file.fileno(), 0, access=mmap.ACCESS_READ) as s:
                     if s.find(b'MasterLog\n========') != -1:
                         found_logs["MasterLog"] = True
                     if s.find(b'StartdLog\n========') != -1:
@@ -172,7 +172,7 @@ def begin_indexing():
     os.remove(pathlib.Path(lock_location))
 
     log("INFO", "Jobs added/updated " + str(jobs_updated))
-    log("INFO", "Indexing Complete Time: " + str(current_milli_time()))
+    log("INFO", "Indexing Complete")
 
 
 begin_indexing()
