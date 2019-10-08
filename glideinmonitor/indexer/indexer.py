@@ -4,8 +4,9 @@ import os
 import tarfile
 import time
 import pathlib
+import argparse
 
-from glideinmonitor.lib.config import config
+from glideinmonitor.lib.config import Config
 from glideinmonitor.lib.database import Database
 from glideinmonitor.lib.logger import log
 
@@ -102,22 +103,23 @@ def directory_jobs(start_path):
 
 def begin_indexing():
     # Check for index job lock
-    lock_location = os.path.join(config['Saved_Log_Dir'], "index_lock")
+    lock_location = os.path.join(Config.get('Saved_Log_Dir'), "index_lock")
     if not pathlib.Path(lock_location).exists():
         pathlib.Path(lock_location).touch()
     else:
         # Job index already running/did not complete
-        log("ERROR", "Lock file present in saved log directory")
-        return
+        if not args.f:
+            log("ERROR", "Lock file present in saved log directory")
+            return
 
     # Entry point for indexing
     db = Database()
     jobs_updated = 0
-    save_dir = config['Saved_Log_Dir'] + "/" + datetime.datetime.now().strftime("/%Y-%m-%d")
+    save_dir = Config.get('Saved_Log_Dir') + "/" + datetime.datetime.now().strftime("/%Y-%m-%d")
     log("INFO", "Begin Indexing")
 
     # Get a dictionary of jobs from the GWMS_Log_Dir directory
-    tree = directory_jobs(config['GWMS_Log_Dir'])
+    tree = directory_jobs(Config.get('GWMS_Log_Dir'))
 
     log("INFO", "Directory Listing Completion")
 
@@ -139,8 +141,8 @@ def begin_indexing():
             found_logs = {"MasterLog": False, "StartdLog": False, "StarterLog": False,
                           "StartdHistoryLog": False, "glidein_activity": False}
             if job_data['err_file_size'] != 0:
-                with open(job_data["err_file_path"], 'rb', 0) as file, \
-                    mmap.mmap(file.fileno(), 0, access=mmap.ACCESS_READ) as s:
+                with open(job_data["err_file_path"], 'rb', 0) as file, mmap.mmap(file.fileno(), 0,
+                                                                                 access=mmap.ACCESS_READ) as s:
                     if s.find(b'MasterLog\n========') != -1:
                         found_logs["MasterLog"] = True
                     if s.find(b'StartdLog\n========') != -1:
@@ -175,4 +177,18 @@ def begin_indexing():
     log("INFO", "Indexing Complete")
 
 
+####
+# Entry point
+####
+
+# Parse command line arguments (if any)
+parser = argparse.ArgumentParser(description="GlideinMonitor's indexing script for GlideIn .out & .err files")
+parser.add_argument('-c', help="Path to Config File")
+parser.add_argument('-f', help="Ignore the lock file and force an index anyway", action='store_true')
+args = parser.parse_args()
+
+# Process config file
+Config.init(args.c)
+
+# Begin Indexing
 begin_indexing()

@@ -2,15 +2,24 @@ import os
 import sys
 import datetime
 import hashlib
+import argparse
 from flask import redirect
 from flask_httpauth import HTTPBasicAuth
 
 # TODO: explicit import to understand better scope
 from glideinmonitor.webserver.rest_api import *
-from glideinmonitor.lib.config import config
+from glideinmonitor.lib.config import Config
 
 app = Flask(__name__)
 auth = HTTPBasicAuth()
+
+# Parse command line arguments (if any)
+parser = argparse.ArgumentParser(description="GlideinMonitor's Flask Web Server")
+parser.add_argument('-c', help="Path to Config File")
+args = parser.parse_args()
+
+# Process config file
+Config.init(args.c)
 
 
 #########################################
@@ -19,8 +28,8 @@ auth = HTTPBasicAuth()
 
 @auth.verify_password
 def verify_password(username, password):
-    if username in config.get('Users'):
-        return config.get('Users').get(username) == hashlib.md5(password.encode()).hexdigest()
+    if username in Config.get('Users'):
+        return Config.get('Users').get(username) == hashlib.md5(password.encode()).hexdigest()
     return False
 
 
@@ -118,7 +127,7 @@ def flask_api_entries():
 
 
 # Redirect Flask output to log file
-log_location_dir = os.path.join(config['Log_Dir'], 'server')
+log_location_dir = os.path.join(Config.get('Log_Dir'), 'server')
 if not os.path.exists(log_location_dir):
     os.makedirs(log_location_dir)
 log_location = os.path.join(log_location_dir, datetime.datetime.now().strftime("%Y-%m-%d") + ".txt")
@@ -126,4 +135,4 @@ sys.stderr = open(log_location, "a")
 sys.stdout = open(log_location, "a")
 
 # Start the Server
-app.run(host=config.get('Host'), port=config.get('Port'))
+app.run(host=Config.get('Host'), port=Config.get('Port'))

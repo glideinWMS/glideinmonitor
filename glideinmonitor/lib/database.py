@@ -1,16 +1,16 @@
 import os
 import sqlite3
 import mysql.connector
-from glideinmonitor.lib.config import config
+from glideinmonitor.lib.config import Config
 from glideinmonitor.lib.logger import log
 
 
 class Database:
     def __init__(self):
         # Connect to SQLite unless specified otherwise in the config file
-        if config["db"]["type"] == "sqlite":
+        if Config.db("type") == "sqlite":
             # SQLite Database
-            self.conn = sqlite3.connect(config["db"]["dir"] + '/database.sqlite')
+            self.conn = sqlite3.connect(Config.db("dir") + '/database.sqlite')
 
             # Check if index table exists
             db_cursor = self.conn.cursor()
@@ -29,10 +29,10 @@ class Database:
             # MySQL Database
             try:
                 self.conn = mysql.connector.connect(
-                    host=config["db"]["host"],
-                    user=config["db"]["user"],
-                    passwd=config["db"]["pass"],
-                    database=config["db"]["db_name"]
+                    host=Config.db("host"),
+                    user=Config.db("user"),
+                    passwd=Config.db("pass"),
+                    database=Config.db("db_name")
                 )
 
                 mycursor = self.conn.cursor()
@@ -40,19 +40,19 @@ class Database:
                 # Create the database
                 log("INFO", "Creating new MySQL Database")
                 mydb = mysql.connector.connect(
-                    host=config["db"]["host"],
-                    user=config["db"]["user"],
-                    passwd=config["db"]["pass"]
+                    host=Config.db("host"),
+                    user=Config.db("user"),
+                    passwd=Config.db("pass")
                 )
 
                 mycursor = mydb.cursor()
-                mycursor.execute("CREATE DATABASE " + config["db"]["db_name"])
+                mycursor.execute("CREATE DATABASE " + Config.db("db_name"))
 
                 self.conn = mysql.connector.connect(
-                    host=config["db"]["host"],
-                    user=config["db"]["user"],
-                    passwd=config["db"]["pass"],
-                    database=config["db"]["db_name"]
+                    host=Config.db("host"),
+                    user=Config.db("user"),
+                    passwd=Config.db("pass"),
+                    database=Config.db("db_name")
                 )
 
                 mycursor = self.conn.cursor()
