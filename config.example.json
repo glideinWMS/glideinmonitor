@@ -1,15 +1,15 @@
 {
-  "GWMS_Log_Dir": "C:\\Users\\Thomas\\Fermilab\\Indexing Sandbox\\archive\\archive",
-  "Saved_Log_Dir": "C:\\Users\\Thomas\\Fermilab\\Indexing Sandbox\\NOSYNC_SavedLogs",
+  "GWMS_Log_Dir": "/etc/.glideinmonitor/archive",
+  "Saved_Log_Dir": "/etc/.glideinmonitor/longterm_archive",
   "db": {
     "type": "mysql",
-    "dir": "C:\\Users\\Thomas\\Fermilab\\Indexing Sandbox\\NOSYNC_DBLOG",
+    "dir": "/etc/.glideinmonitor/sqlite_dir",
     "host": "localhost",
     "user": "root",
     "pass": "",
     "db_name": "glideinmonitor"
   },
-  "Log_Dir": "C:\\Users\\Thomas\\Fermilab\\Indexing Sandbox\\NOSYNC_DBLOG",
+  "Log_Dir": "/etc/.glideinmonitor/logs",
   "Log_Level": "INFO",
   "Users": {
     "admin": "21232f297a57a5a743894a0e4a801fc3"
