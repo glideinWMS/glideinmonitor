@@ -68,17 +68,17 @@ def directory_jobs(start_path):
                 if job_type == ".out":
                     with open(file_path) as f2:
                         # Get timestamp (should be first line)
-                        first_line = f2.readline()
                         try:
+                            first_line = f2.readline()
                             last_known_timestamp = int(first_line.split('(', 1)[1].split(')')[0])
-                        except IndexError:
+                        except (IndexError, UnicodeDecodeError):
                             pass
 
                         # Get the GUID (should be second line)
-                        second_line = f2.readline()
                         try:
+                            second_line = f2.readline()
                             guid = second_line.split('(', 1)[1].split(')')[0]
-                        except IndexError:
+                        except (IndexError, UnicodeDecodeError):
                             pass
 
                 # Now add the job to the tree, use it's (entry name, job id) to place it uniquely in the tree
