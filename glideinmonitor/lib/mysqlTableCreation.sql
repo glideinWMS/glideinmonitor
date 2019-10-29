@@ -8,7 +8,7 @@ create table file_index
 	Timestamp double,
 	FrontendUsername varchar(30),
 	InstanceName varchar(30),
-	EntryName varchar(30),
+	EntryName varchar(100),
 	FilePath varchar(150),
 	MasterLog boolean,
 	StartdLog boolean,
