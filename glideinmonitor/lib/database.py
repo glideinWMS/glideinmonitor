@@ -113,8 +113,8 @@ class Database:
 
         # Check if the job is in the database already
         cur.execute(
-            "SELECT FrontendUsername, InstanceName, FileSize FROM file_index WHERE JobID='{}' and EntryName='{}'".format(
-                job["job_id"], job["entry_name"]))
+            "SELECT FrontendUsername, FileSize FROM file_index WHERE JobID='{}' and EntryName='{}' and InstanceName='{}'"
+                .format(job["job_id"], job["entry_name"], job["instance_name"]))
 
         response = cur.fetchone()
         if response is None:
@@ -132,7 +132,7 @@ class Database:
             # Job already exists, then update it
             cur.execute(
                 "UPDATE file_index SET FilePath = '{}', FileSize = '{}', MasterLog = '{}', StartdLog = '{}',"
-                "StarterLog = '{}', StartdHistLog = '{}', XML_desc = '{}' WHERE GUID = '{}' AND"
+                "StarterLog = '{}', StartdHistLog = '{}', XML_desc = '{}' WHERE GUID = '{}' AND "
                 "FrontendUsername = '{}' AND InstanceName = '{}' AND EntryName = '{}' AND Timestamp = '{}' "
                 "AND JobID = '{}'".format(
                     path, (job["out_file_size"] + job["err_file_size"]), found_logs["MasterLog"],

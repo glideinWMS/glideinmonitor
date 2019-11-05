@@ -82,22 +82,22 @@ def directory_jobs(start_path):
                             pass
 
                 # Now add the job to the tree, use it's (entry name, job id) to place it uniquely in the tree
-                if (path_entry_name, job_id) not in tree:
-                    tree[(path_entry_name, job_id)] = {}
-                    tree[(path_entry_name, job_id)]["job_id"] = job_id
-                    tree[(path_entry_name, job_id)]["frontend_user"] = path_frontend_username
-                    tree[(path_entry_name, job_id)]["instance_name"] = path_instance_name
-                    tree[(path_entry_name, job_id)]["entry_name"] = path_entry_name
+                if (path_instance_name, path_entry_name, job_id) not in tree:
+                    tree[(path_instance_name, path_entry_name, job_id)] = {}
+                    tree[(path_instance_name, path_entry_name, job_id)]["job_id"] = job_id
+                    tree[(path_instance_name, path_entry_name, job_id)]["frontend_user"] = path_frontend_username
+                    tree[(path_instance_name, path_entry_name, job_id)]["instance_name"] = path_instance_name
+                    tree[(path_instance_name, path_entry_name, job_id)]["entry_name"] = path_entry_name
 
                 # Add file type specific data
                 if job_type == ".out":
-                    tree[(path_entry_name, job_id)]["out_file_path"] = file_path
-                    tree[(path_entry_name, job_id)]["out_file_size"] = file_size
-                    tree[(path_entry_name, job_id)]["timestamp"] = last_known_timestamp
-                    tree[(path_entry_name, job_id)]["guid"] = guid
+                    tree[(path_instance_name, path_entry_name, job_id)]["out_file_path"] = file_path
+                    tree[(path_instance_name, path_entry_name, job_id)]["out_file_size"] = file_size
+                    tree[(path_instance_name, path_entry_name, job_id)]["timestamp"] = last_known_timestamp
+                    tree[(path_instance_name, path_entry_name, job_id)]["guid"] = guid
                 elif job_type == ".err":
-                    tree[(path_entry_name, job_id)]["err_file_path"] = file_path
-                    tree[(path_entry_name, job_id)]["err_file_size"] = file_size
+                    tree[(path_instance_name, path_entry_name, job_id)]["err_file_path"] = file_path
+                    tree[(path_instance_name, path_entry_name, job_id)]["err_file_size"] = file_size
     return tree
 
 
@@ -155,7 +155,7 @@ def begin_indexing(args):
                         found_logs["glidein_activity"] = True
 
             # Tar the output and error file
-            curr_job_path = save_dir + "/" + job_name[0] + "_" + job_name[1] + ".tar.gz"
+            curr_job_path = save_dir + "/" + job_name[0] + "_" + job_name[1] + "_" + job_name[2] + ".tar.gz"
             with tarfile.open(curr_job_path, "w:gz") as tar:
                 tar.add(job_data["out_file_path"], arcname=os.path.basename(job_data["out_file_path"]))
                 tar.add(job_data["err_file_path"], arcname=os.path.basename(job_data["err_file_path"]))
