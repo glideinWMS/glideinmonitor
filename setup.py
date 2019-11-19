@@ -46,6 +46,7 @@ setup(
 
     python_requires='>=3.5',
     install_requires=['flask'],
+    setup_requires=['wheel'],
 
     entry_points={
         'console_scripts': [
