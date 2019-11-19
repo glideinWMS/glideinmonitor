@@ -31,22 +31,25 @@ setup(
         #   5 - Production/Stable
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Science/Research',
-        'Topic :: Internet',
-        'License :: OSI Approved :: Apache Software License',
+        'License :: OSI Approved :: BSD License',
+        'Operating System :: MacOS :: MacOS X',
+        'Operating System :: Microsoft :: Windows',
+        'Operating System :: POSIX :: Linux',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Topic :: Internet',
     ],
+    license="Fermitools Software Legal Information (Modified BSD License)",
     keywords='glideinwms workflow web monitor',
 
-    py_modules=["webserver", "indexer", "lib"],
-    packages=find_packages(exclude=['contrib', 'docs', 'tests']),
+    packages=find_packages(exclude=['contrib', 'docs', 'tests', 'build']),
     include_package_data=True,
-    package_data={'': ['*.sql', '*.html', '*.css', '*.js', 'default_config.json']},
+    #package_data={'': ['*.sql', '*.html', '*.css', '*.js', 'default_config.json']},
 
     python_requires='>=3.5',
-    install_requires=['flask'],
     setup_requires=['wheel'],
+    install_requires=['flask'],
 
     entry_points={
         'console_scripts': [

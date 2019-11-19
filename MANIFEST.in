@@ -1,0 +1,5 @@
+# Better some extra file than forgetting some file
+# recursive-include *.sql *.html *.css *.js *.map default_config.json
+graft glideinmonitor
+graft docs
+global-exclude *.py[cod] __pycache__ *.so *.1
