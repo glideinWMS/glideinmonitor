@@ -100,7 +100,7 @@ class Database:
                 # Already added without a file size difference
                 return False
 
-    def add_job(self, job, path, found_logs):
+    def add_job(self, job, path):
         # Adds a job to the database
 
         cur = self.conn.cursor()
@@ -126,8 +126,8 @@ class Database:
                 "VALUES('{}','{}' , '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}')".format(
                     job["job_id"], job["guid"], (job["out_file_size"] + job["err_file_size"]), job["timestamp"],
                     job["frontend_user"], job["instance_name"], job["entry_name"], path,
-                    found_logs["MasterLog"], found_logs["StartdLog"], found_logs["StarterLog"],
-                    found_logs["StartdHistoryLog"], found_logs["glidein_activity"]))
+                    job["MasterLog"], job["StartdLog"], job["StarterLog"],
+                    job["StartdHistoryLog"], job["glidein_activity"]))
         else:
             # Job already exists, then update it
             cur.execute(
@@ -135,9 +135,9 @@ class Database:
                 "StarterLog = '{}', StartdHistLog = '{}', XML_desc = '{}' WHERE GUID = '{}' AND "
                 "FrontendUsername = '{}' AND InstanceName = '{}' AND EntryName = '{}' AND Timestamp = '{}' "
                 "AND JobID = '{}'".format(
-                    path, (job["out_file_size"] + job["err_file_size"]), found_logs["MasterLog"],
-                    found_logs["StartdLog"], found_logs["StarterLog"], found_logs["StartdHistoryLog"],
-                    found_logs["glidein_activity"], job["guid"], job["frontend_user"], job["instance_name"],
+                    path, (job["out_file_size"] + job["err_file_size"]), job["MasterLog"],
+                    job["StartdLog"], job["StarterLog"], job["StartdHistoryLog"],
+                    job["glidein_activity"], job["guid"], job["frontend_user"], job["instance_name"],
                     job["entry_name"], job["timestamp"], job["job_id"]
                 ))
         return

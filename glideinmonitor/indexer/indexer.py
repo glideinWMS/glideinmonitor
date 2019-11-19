@@ -101,22 +101,9 @@ def directory_jobs(start_path):
     return tree
 
 
-def begin_indexing(args):
-    # Check for index job lock
-    lock_location = os.path.join(Config.get('Saved_Log_Dir'), "index_lock")
-    if not pathlib.Path(lock_location).exists():
-        pathlib.Path(lock_location).touch()
-    else:
-        # Job index already running/did not complete
-        if not args.f:
-            log("ERROR", "Lock file present in saved log directory")
-            return
-
+def determine_indexing(args, db):
     # Entry point for indexing
-    db = Database()
     jobs_updated = 0
-    saved_dir_name = Config.get('Saved_Log_Dir')
-    datetime_name = datetime.datetime.now().strftime("%Y-%m-%d")
 
     log("INFO", "Begin Indexing")
 
@@ -124,6 +111,9 @@ def begin_indexing(args):
     tree = directory_jobs(Config.get('GWMS_Log_Dir'))
 
     log("INFO", "Directory Listing Completion")
+
+    # List to be exported
+    job_index_list = []
 
     # Iterate through each job checking the database if it needs to be updated
     for job_name, job_data in tree.items():
@@ -133,14 +123,7 @@ def begin_indexing(args):
                 job_data["entry_name"] + " - " + str(job_data["job_id"]))
             continue
 
-        # Check if the current instance is in the database, if not then add it
-        final_dir_name = os.path.join(saved_dir_name, job_data["instance_name"], job_data["frontend_user"], datetime_name)
-
         if db.needs_update(job_data):
-            # Create the directory if it does not exist
-            if not os.path.exists(final_dir_name):
-                os.makedirs(final_dir_name)
-
             # Check if the file has certain logs within it
             found_logs = {"MasterLog": False, "StartdLog": False, "StarterLog": False,
                           "StartdHistoryLog": False, "glidein_activity": False}
@@ -158,28 +141,44 @@ def begin_indexing(args):
                     if s.find(b'=== Encoded XML description of glidein activity ===') != -1:
                         found_logs["glidein_activity"] = True
 
-            # Tar the output and error file
-            curr_job_path = os.path.join(final_dir_name,
-                                         job_name[0] + "_" + job_name[1] + "_" + job_name[2] + ".tar.gz")
-            with tarfile.open(curr_job_path, "w:gz") as tar:
-                tar.add(job_data["out_file_path"], arcname=os.path.basename(job_data["out_file_path"]))
-                tar.add(job_data["err_file_path"], arcname=os.path.basename(job_data["err_file_path"]))
-                tar.close()
+            # Add found logs into the job data
+            job_data.update(found_logs)
 
-            # Add/Update it in the database
-            db.add_job(job_data, curr_job_path, found_logs)
+            # Add the job to list to be indexed
+            job_index_list.append(job_data)
 
             # Job added/updated
             jobs_updated += 1
 
-    # Indexing complete
-    db.commit()
+    log("INFO", "Jobs to be added/updated " + str(jobs_updated))
 
-    # Delete the lock file
-    os.remove(pathlib.Path(lock_location))
+    return job_index_list
 
-    log("INFO", "Jobs added/updated " + str(jobs_updated))
-    log("INFO", "Indexing Complete")
+
+def archive_files(db, job_index_list):
+    saved_dir_name = Config.get('Saved_Log_Dir')
+    datetime_name = datetime.datetime.now().strftime("%Y-%m-%d")
+
+    for job_data in job_index_list:
+        # Check if the current instance is in the database, if not then add it
+        final_dir_name = os.path.join(saved_dir_name, job_data["instance_name"], job_data["frontend_user"],
+                                      datetime_name)
+
+        # Create the directory if it does not exist
+        if not os.path.exists(final_dir_name):
+            os.makedirs(final_dir_name)
+
+        # Tar the output and error file
+        curr_job_path = os.path.join(final_dir_name,
+                                     job_data["instance_name"] + "_" + job_data["entry_name"] + "_" +
+                                     job_data["job_id"] + ".tar.gz")
+        with tarfile.open(curr_job_path, "w:gz") as tar:
+            tar.add(job_data["out_file_path"], arcname=os.path.basename(job_data["out_file_path"]))
+            tar.add(job_data["err_file_path"], arcname=os.path.basename(job_data["err_file_path"]))
+            tar.close()
+
+        # Add/Update it in the database
+        db.add_job(job_data, curr_job_path)
 
 
 ####
@@ -196,8 +195,31 @@ def main():
     # Process config file
     Config.init(args.c)
 
-    # Begin Indexing
-    begin_indexing(args)
+    # Check for index job lock
+    lock_location = os.path.join(Config.get('Saved_Log_Dir'), "index_lock")
+    if not pathlib.Path(lock_location).exists():
+        pathlib.Path(lock_location).touch()
+    else:
+        # Job index already running/did not complete
+        if not args.f:
+            log("ERROR", "Lock file present in saved log directory")
+            return
+
+    # Connect to the database
+    db = Database()
+
+    # Get list of job data that should be indexed
+    job_index_list = determine_indexing(args, db)
+
+    # Archive the original files
+    archive_files(db, job_index_list)
+
+    # Indexing complete
+    db.commit()
+    log("INFO", "Indexing Complete")
+
+    # Delete the lock file
+    os.remove(pathlib.Path(lock_location))
 
 
 if __name__ == "__main__":
