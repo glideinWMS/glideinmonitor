@@ -9,7 +9,7 @@ create table file_index
 	FrontendUsername varchar(30),
 	InstanceName varchar(30),
 	EntryName varchar(100),
-	FilePath varchar(150),
+	FilePath tinytext,
 	MasterLog boolean,
 	StartdLog boolean,
 	StarterLog boolean,

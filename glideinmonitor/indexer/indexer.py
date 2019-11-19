@@ -115,7 +115,9 @@ def begin_indexing(args):
     # Entry point for indexing
     db = Database()
     jobs_updated = 0
-    save_dir = Config.get('Saved_Log_Dir') + "/" + datetime.datetime.now().strftime("/%Y-%m-%d")
+    saved_dir_name = Config.get('Saved_Log_Dir')
+    datetime_name = datetime.datetime.now().strftime("%Y-%m-%d")
+
     log("INFO", "Begin Indexing")
 
     # Get a dictionary of jobs from the GWMS_Log_Dir directory
@@ -132,10 +134,12 @@ def begin_indexing(args):
             continue
 
         # Check if the current instance is in the database, if not then add it
+        final_dir_name = os.path.join(saved_dir_name, job_data["instance_name"], job_data["frontend_user"], datetime_name)
+
         if db.needs_update(job_data):
             # Create the directory if it does not exist
-            if not os.path.exists(save_dir):
-                os.makedirs(save_dir)
+            if not os.path.exists(final_dir_name):
+                os.makedirs(final_dir_name)
 
             # Check if the file has certain logs within it
             found_logs = {"MasterLog": False, "StartdLog": False, "StarterLog": False,
@@ -155,7 +159,8 @@ def begin_indexing(args):
                         found_logs["glidein_activity"] = True
 
             # Tar the output and error file
-            curr_job_path = save_dir + "/" + job_name[0] + "_" + job_name[1] + "_" + job_name[2] + ".tar.gz"
+            curr_job_path = os.path.join(final_dir_name,
+                                         job_name[0] + "_" + job_name[1] + "_" + job_name[2] + ".tar.gz")
             with tarfile.open(curr_job_path, "w:gz") as tar:
                 tar.add(job_data["out_file_path"], arcname=os.path.basename(job_data["out_file_path"]))
                 tar.add(job_data["err_file_path"], arcname=os.path.basename(job_data["err_file_path"]))
