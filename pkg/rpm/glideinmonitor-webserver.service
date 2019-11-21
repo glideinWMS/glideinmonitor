@@ -6,6 +6,7 @@ Documentation="https://github.com/glideinWMS/glideinmonitor"
 
 [Service]
 Type=forking
+User=gmonitor
 ExecStart=/usr/sbin/glideinmonitor-webserver start
 ExecStop=/usr/sbin/glideinmonitor-webserver stop
 ExecReload=/usr/sbin/glideinmonitor-webserver reload $MAINPID

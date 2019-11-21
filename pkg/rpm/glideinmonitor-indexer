@@ -56,13 +56,15 @@ RET_NOT_RUNNING=7
 
 LOCK=/var/lock/subsys/glideinmonitor-indexer
 RETVAL=0
-BINARY=/usr/sbin/glideinmonitor-indexer
+BINARY=/usr/bin/glideinmonitor-indexer
+CONFIG_FILE=/etc/glideinmonitor-indexer.conf
 
 help_usage() {
+    echo $"Usage: $0 {start|stop|status|restart|reload|force-reload|condrestart}"
 }
 
 start() {
-    action $"Enabling Glidein Monitor Indexer:" "$BINARY" && touch "$LOCK"
+    action $"Enabling Glidein Monitor Indexer:" "$BINARY" -c "$CONFIG_FILE" && touch "$LOCK"
     RETVAL=$?
 }
 
@@ -84,7 +86,7 @@ status() {
         renew_status="disabled"
         RETVAL=$RET_STATUS_NOT_RUNNING
     fi
-    echo "Frontend and pilot proxy renewal is $renew_status."
+    echo "GlideinMonitor Indexer is $renew_status."
 }
 
 case $1  in
@@ -107,8 +109,7 @@ case $1  in
         status
         ;;
   *)
-        #help_usage
-        echo $"Usage: $0 {start|stop|status|restart|reload|force-reload|condrestart}"
+        help_usage
         exit $RET_NOT_IMPLEMENTED
 esac
 
