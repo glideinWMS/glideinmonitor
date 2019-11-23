@@ -70,7 +70,7 @@ This will also be documented later but here is what they briefly mean,
 * db_host, db_user, db_pass, db_name - MySQL - connection info, on first run the database should be created manually without any tables in it
 * Log_Dir - A place to store logs from the webserver and indexer running
 * Log_Level - NONE, ERROR, WARNING, INFO are the acceptable options
-* Users - For the webserver http auth, the key is the username and the value is an MD5 hash of the password (in the example above, the password is "admin")
+* Users - For the webserver http auth, the key is the username and the value is an MD5 hash of the password (in the example above, the password is "admin". To create your own you can use something like `echo -n MY_PASSWORD | md5sum`)
 * Port, Host - For the webserver to operate on
 
 It can be tested using a sample Glidein logs archive which contains the proper client subdirectory.

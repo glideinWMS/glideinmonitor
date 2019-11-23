@@ -1,20 +1,20 @@
-# Modified version starting from the setuptools generated one
+# Modified SPEC file starting from the setuptools generated one
 # https://docs.fedoraproject.org/en-US/packaging-guidelines/Python/
 # Wheels packaging is possible but not recommended
 # https://fedoraproject.org/wiki/PythonWheels
+
+# File must be processed to replace __GMONITOR_PKG_VERSION__ and __GMONITOR_PKG_RELEASE__
+# Replace them manually for manual use
 
 # Release Candidates NVR format
 #%define release 0.1.rc1
 # Official Release NVR format
 #%define release 1
 
-#%global version __GWMS_RPM_VERSION__
-#%global release __GWMS_RPM_RELEASE__
-
 %define name glideinmonitor
-%define version 0.1
+%define version __GMONITOR_PKG_VERSION__
 %define unmangled_version %{version}
-%define release 0.1.rc1
+%define release __GMONITOR_PKG_RELEASE__
 
 Summary: GlideinMonitor Web Server and Indexer
 Name: %{name}
@@ -35,16 +35,18 @@ Source1: %{name}-pkgrpm-%{unmangled_version}.tar.gz
 %global srcname glideinmonitor
 
 %global config_file %{_sysconfdir}/%{srcname}
-%global glideinmonitor_dir %{_localstatedir}/lib/glideinmonitor
+%global glideinmonitor_dir %{_sharedstatedir}/glideinmonitor
 %global archive_dir %{glideinmonitor_dir}/archive
 %global upload_dir %{glideinmonitor_dir}/upload
 %global processing_dir %{glideinmonitor_dir}/processing
 %global db_dir %{glideinmonitor_dir}/db
+%global log_dir %{_localstatedir}/log/glideinmonitor
 # DB defined in config file (may be local or remote)
 # %global db_dir %{_localstatedir}/lib/glideinmonitor/db
 # using also:
 # /usr/sbin %{_sbindir} , /var/lib %{_sharedstatedir}, /usr/share %{_datadir}, cron dir, ?
 %global systemddir %{_prefix}/lib/systemd/system
+%global rpm_templates_dir pkg/rpm/templates
 
 
 Requires: python3
@@ -123,20 +125,23 @@ install -d $RPM_BUILD_ROOT%{archive_dir}
 install -d $RPM_BUILD_ROOT%{upload_dir}
 install -d $RPM_BUILD_ROOT%{processing_dir}
 install -d $RPM_BUILD_ROOT%{db_dir}
-# System startup, cron and config files
+# Log, system startup, cron and config files
+install -d $RPM_BUILD_ROOT%{glideinmonitor_dir}
+install -d $RPM_BUILD_ROOT%{log_dir}
 install -d $RPM_BUILD_ROOT%{systemddir}
-install -m 0644 pkg/rpm/glideinmonitor-indexer.service $RPM_BUILD_ROOT%{systemddir}/
-install -m 0644 pkg/rpm/glideinmonitor-webserver.service $RPM_BUILD_ROOT%{systemddir}/
-install -m 0644 pkg/rpm/glideinmonitor-indexer.timer $RPM_BUILD_ROOT%{systemddir}/
+install -m 0644 %{rpm_templates_dir}/glideinmonitor-indexer.service $RPM_BUILD_ROOT%{systemddir}/
+install -m 0644 %{rpm_templates_dir}/glideinmonitor-webserver.service $RPM_BUILD_ROOT%{systemddir}/
+install -m 0644 pkg/rpm/templates/glideinmonitor-indexer.timer $RPM_BUILD_ROOT%{systemddir}/
 install -d $RPM_BUILD_ROOT%{_sbindir}
-install -m 0755 pkg/rpm/glideinmonitor-indexer $RPM_BUILD_ROOT%{_sbindir}/
-install -m 0755 pkg/rpm/glideinmonitor-webserver $RPM_BUILD_ROOT%{_sbindir}/
+install -m 0644 %{rpm_templates_dir}/initscript_functions $RPM_BUILD_ROOT%{_sbindir}/
+install -m 0755 %{rpm_templates_dir}/glideinmonitor-indexer $RPM_BUILD_ROOT%{_sbindir}/
+install -m 0755 %{rpm_templates_dir}/glideinmonitor-webserver $RPM_BUILD_ROOT%{_sbindir}/
 install -d $RPM_BUILD_ROOT%{_sysconfdir}
 install -d $RPM_BUILD_ROOT%{_sysconfdir}/glideinmonitor-indexer
 install -d $RPM_BUILD_ROOT%{_sysconfdir}/glideinmonitor-indexer/filter.d
-install -m 0644 pkg/rpm/glideinmonitor.conf $RPM_BUILD_ROOT%{_sysconfdir}/
-install -m 0644 pkg/rpm/glideinmonitor-indexer.conf $RPM_BUILD_ROOT%{_sysconfdir}/
-install -m 0644 pkg/rpm/glideinmonitor-webserver.conf $RPM_BUILD_ROOT%{_sysconfdir}/
+install -m 0644 %{rpm_templates_dir}/glideinmonitor.conf $RPM_BUILD_ROOT%{_sysconfdir}/
+install -m 0644 %{rpm_templates_dir}/glideinmonitor-indexer.conf $RPM_BUILD_ROOT%{_sysconfdir}/
+install -m 0644 %{rpm_templates_dir}/glideinmonitor-webserver.conf $RPM_BUILD_ROOT%{_sysconfdir}/
 
 %pre common
 # Add the "gmonitor" user and group if they do not exist
@@ -190,6 +195,9 @@ rm -rf $RPM_BUILD_ROOT
 %attr(-, gmonitor, gmonitor) %dir %{upload_dir}
 %attr(-, gmonitor, gmonitor) %dir %{processing_dir}
 %attr(-, gmonitor, gmonitor) %dir %{db_dir}
+%attr(-, gmonitor, gmonitor) %dir %{glideinmonitor_dir}
+%attr(-, gmonitor, gmonitor) %dir %{log_dir}
+%attr(0644, root, root) %{_sbindir}/initscript_functions
 %attr(-, gmonitor, gmonitor) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/glideinmonitor.conf
 
 %files indexer
