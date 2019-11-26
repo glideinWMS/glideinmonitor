@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-[[ "$1" = "-h" || "$1" = "--help" ]] && { echo "$0 [ PKG_VERSION [ PKG_RELEASE ]]" ; exit }
+[[ "$1" = "-h" || "$1" = "--help" ]] && { echo "$0 [ PKG_VERSION [ PKG_RELEASE ]]"; exit; }
 
 PKG_VERSION=${1:-0.1}
 PKG_RELEASE=${2:-0.1.rc1}
@@ -24,11 +24,11 @@ echo "--- 2 --- building the RPMs "
 # using ~/rpmbuild/ (linked to /opt/glideinmonitor/glideinmonitor/build/bdist.linux-x86_64/rpm )
 # https://linux.die.net/man/8/rpmbuild
 
-sed -e "s/__GMONITOR_PKG_VERSION__/$PKG_VERSION/g" -e "s/__GMONITOR_PKG_RELEASE__/PKG_RELEASE/g" pkg/rpm/glideinmonitor.spec > build/bdist.linux-x86_64/rpm/SPECS/glideinmonitor.spec
+sed -e "s/__GMONITOR_PKG_VERSION__/$PKG_VERSION/g" -e "s/__GMONITOR_PKG_RELEASE__/$PKG_RELEASE/g" pkg/rpm/glideinmonitor.spec > build/bdist.linux-x86_64/rpm/SPECS/glideinmonitor.spec
 pushd build/bdist.linux-x86_64/rpm/SPECS/
 rpmbuild -ba glideinmonitor.spec
 
-cd ../RPMS
+cd ../RPMS/noarch
 echo "RPM files are in `pwd`"
 popd
 
