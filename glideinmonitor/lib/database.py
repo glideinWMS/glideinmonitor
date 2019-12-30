@@ -1,10 +1,6 @@
 import os
 import sqlite3
-try:
-    import mysql.connector
-    MYSQL_AVAILABLE = True
-except ImportError:
-    MYSQL_AVAILABLE = False
+import mysql.connector
 from glideinmonitor.lib.config import Config
 from glideinmonitor.lib.logger import log
 
@@ -30,9 +26,6 @@ class Database:
                 script_file.close()
                 db_cursor.executescript(script)
         else:
-            if not MYSQL_AVAILABLE:
-                log("ERROR", "Trying to use MySQL but is not installed")
-                raise ImportError
             # MySQL Database
             try:
                 self.conn = mysql.connector.connect(
