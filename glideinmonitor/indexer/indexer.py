@@ -198,6 +198,10 @@ def main():
     # Check for index job lock
     lock_location = os.path.join(Config.get('Saved_Log_Dir'), "index_lock")
     if not pathlib.Path(lock_location).exists():
+        try:
+            os.mkdir(Config.get('Saved_Log_Dir'))
+        except FileExistsError:
+            pass
         pathlib.Path(lock_location).touch()
     else:
         # Job index already running/did not complete
