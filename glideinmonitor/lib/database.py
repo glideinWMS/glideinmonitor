@@ -100,14 +100,15 @@ class Database:
                 # Already added without a file size difference
                 return False
 
-    def add_job(self, job, path):
+    def add_job(self, job, path_original, path_filter):
         # Adds a job to the database
 
         cur = self.conn.cursor()
 
         # Escape the path (MySQL only)
         try:
-            path = self.conn.converter.escape(path)
+            path_original = self.conn.converter.escape(path_original)
+            path_filter = self.conn.converter.escape(path_filter)
         except AttributeError:
             pass
 
@@ -121,21 +122,21 @@ class Database:
             # Does not exist in db, insert it
             cur.execute(
                 "INSERT INTO file_index(JobID, GUID, FileSize, Timestamp, FrontendUsername, InstanceName, EntryName, "
-                "FilePath, "
+                "FilePathOriginal, FilePathFilter, "
                 "MasterLog, StartdLog, StarterLog, StartdHistLog, XML_desc)"
-                "VALUES('{}','{}' , '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}')".format(
+                "VALUES('{}','{}' , '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}')".format(
                     job["job_id"], job["guid"], (job["out_file_size"] + job["err_file_size"]), job["timestamp"],
-                    job["frontend_user"], job["instance_name"], job["entry_name"], path,
+                    job["frontend_user"], job["instance_name"], job["entry_name"], path_original, path_filter,
                     job["MasterLog"], job["StartdLog"], job["StarterLog"],
                     job["StartdHistoryLog"], job["glidein_activity"]))
         else:
             # Job already exists, then update it
             cur.execute(
-                "UPDATE file_index SET FilePath = '{}', FileSize = '{}', MasterLog = '{}', StartdLog = '{}',"
+                "UPDATE file_index SET FilePathOriginal = '{}', FilePathFilter = '{}', FileSize = '{}', MasterLog = '{}', StartdLog = '{}',"
                 "StarterLog = '{}', StartdHistLog = '{}', XML_desc = '{}' WHERE GUID = '{}' AND "
                 "FrontendUsername = '{}' AND InstanceName = '{}' AND EntryName = '{}' AND Timestamp = '{}' "
                 "AND JobID = '{}'".format(
-                    path, (job["out_file_size"] + job["err_file_size"]), job["MasterLog"],
+                    path_original, path_filter, (job["out_file_size"] + job["err_file_size"]), job["MasterLog"],
                     job["StartdLog"], job["StarterLog"], job["StartdHistoryLog"],
                     job["glidein_activity"], job["guid"], job["frontend_user"], job["instance_name"],
                     job["entry_name"], job["timestamp"], job["job_id"]
@@ -207,9 +208,9 @@ class Database:
 
         # Do directory/file names need to be sanitized?
         if given_guid:
-            cur.execute("SELECT FilePath FROM file_index WHERE GUID='{}'".format(jobID))
+            cur.execute("SELECT FilePathOriginal FROM file_index WHERE GUID='{}'".format(jobID))
         else:
-            cur.execute("SELECT FilePath FROM file_index WHERE ID='{}'".format(jobID))
+            cur.execute("SELECT FilePathOriginal FROM file_index WHERE ID='{}'".format(jobID))
 
         response = cur.fetchone()
 

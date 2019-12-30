@@ -178,7 +178,7 @@ def archive_files(db, job_index_list):
             tar.close()
 
         # Add/Update it in the database
-        db.add_job(job_data, curr_job_path)
+        db.add_job(job_data, curr_job_path, "")
 
 
 ####
