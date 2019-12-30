@@ -10,6 +10,11 @@ class Database:
         # Connect to SQLite unless specified otherwise in the config file
         if Config.db("type") == "sqlite":
             # SQLite Database
+            try:
+                os.mkdir(Config.db("dir"))
+                log("INFO", "Creating new directory for SQLite DB")
+            except FileExistsError:
+                pass
             self.conn = sqlite3.connect(Config.db("dir") + '/database.sqlite')
 
             # Check if index table exists

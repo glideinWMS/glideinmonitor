@@ -200,6 +200,7 @@ def main():
     if not pathlib.Path(lock_location).exists():
         try:
             os.mkdir(Config.get('Saved_Log_Dir'))
+            log("INFO", "Creating new directory for index_lock")
         except FileExistsError:
             pass
         pathlib.Path(lock_location).touch()
