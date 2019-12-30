@@ -4,16 +4,12 @@
 ## alt: chkconfig: 345 99 9
 # description: Starts and stops the glidienmonitor indexer
 
-# Emulate function library.
-success() {
-    echo -en "\\033[60G[\033[32mOK\033[0m]"
-    return 0
-}
-
-failure() {
-    echo -en "\\033[60G[\033[31mFAILED\033[0m]"
-    return 1
-}
+# Source function library or its emulation
+if [ -f /etc/rc.d/init.d/functions ]; then
+    . /etc/rc.d/init.d/functions
+else
+    [ -f ./initscript_functions ] && . ./initscript_functions
+fi
 
 # LSB Exit codes for status:
 #0    program is running or service is OK
@@ -50,19 +46,19 @@ RET_NOT_INSTALLED=5
 RET_NOT_CONFIGURED=6
 RET_NOT_RUNNING=7
 
-. /etc/rc.d/init.d/functions
+LOCK=/var/lock/subsys/glideinmonitor-indexer
+RETVAL=0
+BINARY=/usr/bin/glideinmonitor-indexer
+CONFIG_FILE=/etc/glideinmonitor-indexer.conf
 
 [ -f /etc/sysconfig/glideinmonitor ] && . /etc/sysconfig/glideinmonitor
 
-LOCK=/var/lock/subsys/glideinmonitor-indexer
-RETVAL=0
-BINARY=/usr/sbin/glideinmonitor-indexer
-
 help_usage() {
+    echo $"Usage: $0 {start|stop|status|restart|reload|force-reload|condrestart}"
 }
 
 start() {
-    action $"Enabling Glidein Monitor Indexer:" "$BINARY" && touch "$LOCK"
+    action $"Enabling Glidein Monitor Indexer:" "$BINARY" -c "$CONFIG_FILE" && touch "$LOCK"
     RETVAL=$?
 }
 
@@ -84,7 +80,7 @@ status() {
         renew_status="disabled"
         RETVAL=$RET_STATUS_NOT_RUNNING
     fi
-    echo "Frontend and pilot proxy renewal is $renew_status."
+    echo "GlideinMonitor Indexer is $renew_status."
 }
 
 case $1  in
@@ -107,8 +103,7 @@ case $1  in
         status
         ;;
   *)
-        #help_usage
-        echo $"Usage: $0 {start|stop|status|restart|reload|force-reload|condrestart}"
+        help_usage
         exit $RET_NOT_IMPLEMENTED
 esac
 

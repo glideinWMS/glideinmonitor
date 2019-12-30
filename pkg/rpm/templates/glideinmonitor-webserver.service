@@ -1,0 +1,20 @@
+[Unit]
+Description=Glidein Monitor Web Server
+#Requires=
+After=network.target
+Documentation="https://github.com/glideinWMS/glideinmonitor"
+
+[Service]
+# Type=simple - makes activation faster, but is not repotring startup errors
+Type=exec
+User=gmonitor
+WorkingDirectory=/var/lib/glideinmonitor/
+ExecStart=/usr/bin/glideinmonitor-webserver -c /etc/glideinmonitor-webserver.conf
+# No need for stop and reload, Flask understands SIGTERM and SIGHUP (defaults)
+#ExecStop=
+#ExecReload=
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+

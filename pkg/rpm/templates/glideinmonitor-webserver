@@ -3,16 +3,12 @@
 # chkconfig: 35 90 30
 # description: Starts and stops the glidienmonitor
 
-# Emulate function library.
-success() {
-    echo -en "\\033[60G[\033[32mOK\033[0m]"
-    return 0
-}
-
-failure() {
-    echo -en "\\033[60G[\033[31mFAILED\033[0m]"
-    return 1
-}
+# Source function library or its emulation
+if [ -f /etc/rc.d/init.d/functions ]; then
+    . /etc/rc.d/init.d/functions
+else
+    [ -f ./initscript_functions ] && . ./initscript_functions
+fi
 
 # LSB Exit codes for status:
 #0    program is running or service is OK
@@ -49,20 +45,77 @@ RET_NOT_INSTALLED=5
 RET_NOT_CONFIGURED=6
 RET_NOT_RUNNING=7
 
+LOCK=/var/lock/subsys/glideinmonitor-webserver
+RETVAL=0
+BINARY=/usr/bin/glideinmonitor-webserver
+CONFIG_FILE=/etc/glideinmonitor-webserver.conf
 
 [ -f /etc/sysconfig/glideinmonitor ] && . /etc/sysconfig/glideinmonitor
 
 help_usage() {
+    echo $"Usage: $0 {start|stop|status|restart|reload|force-reload|condrestart}"
 }
 
 start() {
+    action $"Starting GlideinMonitor Web server:" "$BINARY" -c "$CONFIG_FILE" && touch "$LOCK"
+    RETVAL=$?
 }
 
 stop() {
+    # TODO: how should it stop?
+    action $"Stopping GlideinMonitor Web server:" rm -f "$LOCK"
+    RETVAL=$?
 }
 
-reload() {
+restart() {
+    stop
+    start
 }
+
+status() {
+    # TODO: how should it check?
+    if [ -f $LOCK ]; then
+        renew_status="running"
+        RETVAL=$RET_OK
+    else
+        renew_status="stopped"
+        RETVAL=$RET_STATUS_NOT_RUNNING
+    fi
+    echo "GlideinMonitor Web server is $renew_status."
+}
+
+case $1  in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  restart|force-reload)
+        restart
+        ;;
+  reload)
+        # TODO: signal to reload configuration? is standard reload action implemented
+        if [ "$2" != "" ]; then
+            systemd_reload $2
+        else
+           echo "MUST SUPPLY A PID WITH THIS ARGUMENT"
+        fi
+        ;;
+  condrestart)
+        [ ! -f "$LOCK" ] && restart
+        ;;
+  status)
+        status
+        ;;
+  *)
+        help_usage
+        exit $RET_NOT_IMPLEMENTED
+esac
+
+exit $RETVAL
+
+
 
 case $1 in
     start)
