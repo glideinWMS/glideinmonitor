@@ -16,12 +16,14 @@ Any number of filters may be added to the configuration file like below,
   "filters": [
     {
       "name": "f1",
+      "description": "Replaces factory names",
       "type": "whole",
       "exe": "path_to_filterF1",
       "timeout": 120
     },
     {
       "name": "f2",
+      "description": "Redacts Condor XML Description",
       "type": "unpacked",
       "exe": "path_to_filterF2",
       "timeout": 0
@@ -33,9 +35,11 @@ Here there are two filters in this example.  Each filter has a unique name, a ty
 
 The jobs will be filtered in the sequence of the filters listed in the configuration file.  There is a additional process that unpacks and packs depending on switched to and from a type of the filter.  It is recommended for performance, but not required, that the same type of filters be next to each other in the sequence.
 
-### Filter Name Config
+### Filter Name & Description Config
 
 Each filter has a unique name from the other filters.  The filter's name is used in the back end to create a directory - so choose a name that can be the name of a directory.
+
+Filters can also be given a description that is purely for documentation purposes.
 
 ### Filter Type Config
 
