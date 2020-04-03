@@ -67,13 +67,27 @@ It can be tested using a sample Glidein logs archive which contains the proper c
 Once that's all complete, then run "glideinmonitor-indexer" and then "glideinmonitor-webserver".
 
 
-## Install RPMs
+## Install using RPM
+
+There are multiple RPM packages:
+* glideinmonitor-indexer - GlideinMonitor Indexer 
+* glideinmonitor-webserver - GlideinMonitor Web Server
+* glideinmonitor-monolith - Install both Indexer and Web Server on the same host
+* glideinmonitor-common - common elements between Indexer and Web Server (never installed directly)
+
 
 ### One host deployment
 
 One host deployment using sqlite.
 
-If you are installing from local files yum dependencies between the GlideinMonitor packages will not work, 
+GlideinMonitor is available in the OSG development repository.
+Prepare the [required Yum repositories](https://opensciencegrid.org/docs/common/yum/).
+Install GlideinMonitor:
+```shell
+yum install --enablerepo=osg-development glideinmonitor-monolith
+```
+
+If you are installing from local files (RPM downloaded manually) yum dependencies between the GlideinMonitor packages will not work, 
 so you have to install them in order.
 
 ```shell
@@ -113,9 +127,12 @@ chown -R gmonitor: *
 rmdir archive/
 ```
 
-To start/stop the services you can use systemctl:
+To start/stop the services you should use systemctl:
 ```bash
+# After the RPM install
 systemctl reload systemd
+
+# To start
 systemctl start glideinmonitor-indexer.service
 systemctl status glideinmonitor-indexer.service
 
@@ -129,5 +146,8 @@ systemctl stop glideinmonitor-indexer.service
 
 ### Three hosts deployment
 
+Instructions coming soon
 
 ## Install via Docker
+
+Coming soon
