@@ -42,6 +42,35 @@ class Config:
             return curr
 
     @classmethod
+    def filters(cls):
+        # Returns a list of filters
+        if "filters" not in cls.config_data:
+            return []
+
+        filter_list = []
+
+        for cur_filter in cls.config_data["filters"]:
+            # Check if the necessary fields are present for the filter
+            if not all(k in cur_filter for k in ("name", "exe", "type")):
+                raise Exception("A filter is missing a name, exe, and/or type field")
+
+            # Add other optional fields with defaults if they are not present
+            cur_filter.setdefault("timeout", 0)
+            cur_filter.setdefault("description", "")
+
+            # Check if the exe is a valid executable
+            if not os.path.exists(cur_filter["exe"]):
+                raise Exception("A filter '" + str(cur_filter["name"]) + "' has an exe that cannot be found")
+
+            if not os.access(cur_filter["exe"], os.X_OK):
+                raise Exception("A filter '" + str(cur_filter["name"]) + "' has an exe that is not executable")
+
+            # Add the filter to the master list
+            filter_list.append(cur_filter)
+
+        return []
+
+    @classmethod
     def db(cls, key):
         return cls.config_data["db"][key]
 

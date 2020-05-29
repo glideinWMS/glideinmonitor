@@ -9,6 +9,7 @@ import argparse
 from glideinmonitor.lib.config import Config
 from glideinmonitor.lib.database import Database
 from glideinmonitor.lib.logger import log
+from glideinmonitor.indexer.filter import Filter
 
 
 def current_milli_time():
@@ -159,6 +160,9 @@ def archive_files(db, job_index_list):
     saved_dir_name = Config.get('Saved_Log_Dir')
     datetime_name = datetime.datetime.now().strftime("%Y-%m-%d")
 
+    # Initialize the filter
+    index_filter = Filter()
+
     for job_data in job_index_list:
         # Check if the current instance is in the database, if not then add it
         final_dir_name = os.path.join(saved_dir_name, job_data["instance_name"], job_data["frontend_user"],
@@ -169,16 +173,21 @@ def archive_files(db, job_index_list):
             os.makedirs(final_dir_name)
 
         # Tar the output and error file
-        curr_job_path = os.path.join(final_dir_name,
-                                     job_data["instance_name"] + "_" + job_data["entry_name"] + "_" +
-                                     job_data["job_id"] + ".tar.gz")
-        with tarfile.open(curr_job_path, "w:gz") as tar:
+        saveFileName = job_data["instance_name"] + "_" + job_data["entry_name"] + "_" + job_data["job_id"] + ".tar.gz"
+        filePath_original = os.path.join(final_dir_name, "original_" + saveFileName)
+
+        with tarfile.open(filePath_original, "w:gz") as tar:
             tar.add(job_data["out_file_path"], arcname=os.path.basename(job_data["out_file_path"]))
             tar.add(job_data["err_file_path"], arcname=os.path.basename(job_data["err_file_path"]))
             tar.close()
 
+        # An archive of the original files has been created, filePath_original
+        # Now, if there are any filters, filter out the files and create a filter archive
+        filePath_filter = index_filter.filter_builder(final_dir_name, "filter_" + saveFileName,
+                                         [("out", job_data["out_file_path"]), ("err", job_data["err_file_path"])])
+
         # Add/Update it in the database
-        db.add_job(job_data, curr_job_path, "")
+        db.add_job(job_data, filePath_original, filePath_filter)
 
 
 ####
