@@ -68,7 +68,7 @@ class Config:
             # Add the filter to the master list
             filter_list.append(cur_filter)
 
-        return []
+        return filter_list
 
     @classmethod
     def db(cls, key):
