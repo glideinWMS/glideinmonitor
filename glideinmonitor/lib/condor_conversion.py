@@ -26,7 +26,7 @@ def whole_to_unpacked(job_uuid, input_dir, output_dir):
         # Iterate through each placeholder
         for currentCondorLog in condorPlaceholders:
             # Check if the placeholder exists in the file
-            if file_err_data.index(currentCondorLog[0]) != -1:
+            if currentCondorLog[0] in file_err_data:
                 try:
                     # Get the base64 encoded text
                     base64_begin = file_err_data.index("644 -", file_err_data.index(currentCondorLog[0])) + 6
