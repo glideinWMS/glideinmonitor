@@ -3,7 +3,6 @@ import io
 import os
 import base64
 import zlib
-import shutil
 
 condorPlaceholders = [("MasterLog\n========", 'MasterLog'),
                       ("StartdLog\n========", 'StartdLog'),
@@ -13,14 +12,15 @@ condorPlaceholders = [("MasterLog\n========", 'MasterLog'),
 
 
 def whole_to_unpacked(job_uuid, input_dir, output_dir):
-    # Out files do not contain condor hashed logs, move them
-    shutil.move(os.path.join(input_dir, job_uuid + ".out"), os.path.join(output_dir, job_uuid + ".out"))
+    # Extract condor logs unpacking the hashed content - only process .err files
+    # Returns a list of the unpacked file(s)
+    unpacked_file_list = []
 
-    # Process the .err file, based on the JS script's method
+    # Process the '.err' file, based on the JS script's method
     # (changes here should also be reflected in the JS version)
     # At some point, search the file byte by byte might be a better approach for performance
     # Rather than loading the whole file in memory
-    with open(os.path.join(input_dir, job_uuid + ".err"), 'r') as file:
+    with open(os.path.join(input_dir, job_uuid + '.err'), 'r') as file:
         file_err_data = file.read()
 
         # Iterate through each placeholder
@@ -41,14 +41,15 @@ def whole_to_unpacked(job_uuid, input_dir, output_dir):
                     decompressed_condor_log = zlib.decompress(decoded_condor_log, 16 + zlib.MAX_WBITS)
 
                     # Send the output to the appropriate file
-                    output_file_name = os.path.join(output_dir, job_uuid + '.' + currentCondorLog[1] + '.err')
+                    output_file_name = os.path.join(output_dir, job_uuid + '.err' + '.' + currentCondorLog[1])
                     with open(output_file_name, 'w+b') as f:
                         f.write(decompressed_condor_log)
+                        unpacked_file_list.append(job_uuid + '.err' + '.' + currentCondorLog[1])
 
                     # Strip the content from the file's data and replace with the placeholder
                     # file_err_data.replace(base64_content, '[[['+currentCondorLog[1]+']]]')
-                    file_err_data = file_err_data[:base64_begin] + '[[[' + currentCondorLog[1] + ']]]' \
-                                    + file_err_data[base64_end:]
+                    file_err_data = file_err_data[:base64_begin] + '[[[' + currentCondorLog[1] + ']]]' + file_err_data[
+                                                                                                         base64_end:]
                 except ValueError:
                     continue
             continue
@@ -61,18 +62,20 @@ def whole_to_unpacked(job_uuid, input_dir, output_dir):
     # Finally, delete the original .err file
     os.remove(os.path.join(input_dir, job_uuid + ".err"))
 
+    # Return list of the unpacked files (but not the '.err' file itself)
+    return unpacked_file_list
+
 
 def unpacked_to_whole(job_uuid, input_dir, output_dir):
-    # Out files do not contain condor hashed logs, move them
-    shutil.move(os.path.join(input_dir, job_uuid + ".out"), os.path.join(output_dir, job_uuid + ".out"))
+    # Pack condor logs back into their .err files - only process .err files
 
     # Process the .err file
-    with open(os.path.join(input_dir, job_uuid + ".err"), 'r') as err_file:
+    with open(os.path.join(input_dir, job_uuid + '.err'), 'r') as err_file:
         file_err_data = err_file.read()
 
         # Iterate through each condor log, and check if the corresponding file exists
         for currentCondorLog in condorPlaceholders:
-            current_log_path = os.path.join(input_dir, job_uuid + '.' + currentCondorLog[1] + '.err')
+            current_log_path = os.path.join(input_dir, job_uuid + '.err.' + currentCondorLog[1])
 
             if not os.path.isfile(current_log_path):
                 continue
@@ -92,12 +95,11 @@ def unpacked_to_whole(job_uuid, input_dir, output_dir):
 
                 # Replace placeholder in err file
                 placeholder_name = '[[[' + currentCondorLog[1] + ']]]'
-                file_err_data = file_err_data[:file_err_data.index(placeholder_name)] + \
-                                condor_log_base64.decode("utf-8") + \
-                                file_err_data[file_err_data.index(placeholder_name) + len(placeholder_name):]
+                file_err_data = file_err_data[:file_err_data.index(placeholder_name)] + condor_log_base64.decode(
+                    "utf-8") + file_err_data[file_err_data.index(placeholder_name) + len(placeholder_name):]
 
             # Remove the file from the input folder
-            os.remove(os.path.join(input_dir, job_uuid + '.' + currentCondorLog[1] + '.err'))
+            os.remove(os.path.join(input_dir, job_uuid + '.err.' + currentCondorLog[1]))
 
         # Save the .err file
         output_file_name = os.path.join(output_dir, job_uuid + '.err')

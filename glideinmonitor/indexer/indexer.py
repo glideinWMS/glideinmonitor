@@ -8,8 +8,8 @@ import argparse
 
 from glideinmonitor.lib.config import Config
 from glideinmonitor.lib.database import Database
-from glideinmonitor.lib.logger import log
 from glideinmonitor.indexer.filter import Filter
+from glideinmonitor.lib.logger import log
 
 
 def current_milli_time():
@@ -28,7 +28,7 @@ def directory_jobs(start_path):
     path_instance_name = ""
     path_entry_name = ""
 
-    # Some files don't have a timestamp in it's .err file,
+    # Some files don't have a timestamp in it's '.err' file,
     #   use the one from the previous job if it's not there
     last_known_timestamp = 0
 
@@ -65,7 +65,7 @@ def directory_jobs(start_path):
                 # GUID by default is FrontendUsername@InstanceName@EntryName@JobID
                 guid = path_frontend_username + "@" + path_instance_name + "@" + path_entry_name + "@" + job_id
 
-                # Try and get out specific information
+                # Try to get out specific information
                 if job_type == ".out":
                     with open(file_path) as f2:
                         # Get timestamp (should be first line)
@@ -102,7 +102,7 @@ def directory_jobs(start_path):
     return tree
 
 
-def determine_indexing(args, db):
+def determine_indexing(db):
     # Entry point for indexing
     jobs_updated = 0
 
@@ -118,7 +118,7 @@ def determine_indexing(args, db):
 
     # Iterate through each job checking the database if it needs to be updated
     for job_name, job_data in tree.items():
-        # Skip entries that are missing an err/out file
+        # Skip entries that are missing an '.err'/'.out'. file
         if "err_file_path" not in job_data or "out_file_path" not in job_data:
             log("INFO", "Missing ERR/OUT file for entry - jobID: " +
                 job_data["entry_name"] + " - " + str(job_data["job_id"]))
@@ -165,29 +165,43 @@ def archive_files(db, job_index_list):
 
     for job_data in job_index_list:
         # Check if the current instance is in the database, if not then add it
-        final_dir_name = os.path.join(saved_dir_name, job_data["instance_name"], job_data["frontend_user"],
-                                      datetime_name)
+        final_dir_name_original = os.path.join(saved_dir_name, "original", job_data["instance_name"],
+                                               job_data["frontend_user"],
+                                               datetime_name)
+        final_dir_name_filter = os.path.join(saved_dir_name, "filter", job_data["instance_name"],
+                                             job_data["frontend_user"],
+                                             datetime_name)
 
-        # Create the directory if it does not exist
-        if not os.path.exists(final_dir_name):
-            os.makedirs(final_dir_name)
+        # Create the directories if they do not exist
+        if not os.path.exists(final_dir_name_original):
+            os.makedirs(final_dir_name_original)
+        if not os.path.exists(final_dir_name_filter):
+            os.makedirs(final_dir_name_filter)
 
         # Tar the output and error file
-        saveFileName = job_data["instance_name"] + "_" + job_data["entry_name"] + "_" + job_data["job_id"] + ".tar.gz"
-        filePath_original = os.path.join(final_dir_name, "original_" + saveFileName)
+        save_file_name = job_data["instance_name"] + "_" + job_data["entry_name"] + "_" + job_data["job_id"] + ".tar.gz"
+        file_path_original = os.path.join(final_dir_name_original, "original_" + save_file_name)
+        file_path_filter = os.path.join(final_dir_name_filter, "filter_" + save_file_name)
 
-        with tarfile.open(filePath_original, "w:gz") as tar:
+        # Save the original immediately
+        with tarfile.open(file_path_original, "w:gz") as tar:
             tar.add(job_data["out_file_path"], arcname=os.path.basename(job_data["out_file_path"]))
             tar.add(job_data["err_file_path"], arcname=os.path.basename(job_data["err_file_path"]))
             tar.close()
 
         # An archive of the original files has been created, filePath_original
-        # Now, if there are any filters, filter out the files and create a filter archive
-        filePath_filter = index_filter.filter_builder(final_dir_name, "filter_" + saveFileName,
-                                         [("out", job_data["out_file_path"]), ("err", job_data["err_file_path"])])
+        # Now, add the job to the filter queue and give it the final destination full path, filePath_filter
+        index_filter.add_job(file_path_filter, job_data)
 
         # Add/Update it in the database
-        db.add_job(job_data, filePath_original, filePath_filter)
+        db.add_job(job_data, file_path_original, file_path_filter)
+
+    # Ensure filters have completed running before the archive is complete
+    while index_filter.filters_still_running():
+        time.sleep(1)
+
+    # Cleanup filter folders
+    index_filter.cleanup()
 
 
 ####
@@ -223,12 +237,12 @@ def main():
     db = Database()
 
     # Get list of job data that should be indexed
-    job_index_list = determine_indexing(args, db)
+    job_index_list = determine_indexing(db)
 
     # Archive the original files
     archive_files(db, job_index_list)
 
-    # Indexing complete
+    # Indexing & filtering complete
     db.commit()
     log("INFO", "Indexing Complete")
 
