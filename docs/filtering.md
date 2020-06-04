@@ -84,7 +84,30 @@ In short, a filter should be set up to perform a loop of the following,
 
 ### Filter Timeout Config
 
-A timeout (in seconds) can be configured that should represent the max time a filter should take to process a batch of job files.  This timeout starts when the indexer adds the last job files to the `in_path`.  When the timeout is reached and the filter has not terminated, the indexer will terminate the filter and move any files from the `in_path` to the `out_path` folder (this process will move the files, but not overwrite any files).  A timeout of `0` can be configured to disable this feature for a given filter which will allow it to run forever.
+A timeout (in seconds) can be configured that should represent the max time a filter should take to process a batch of job files.  A timeout of `0` can be configured to disable this feature for a given filter which will allow it to run forever.  Each filter has it's own timeout starting point, and starts when all the job files has reached its individual `in_path` folder (when the timeout starts for a filter, it means no more files will be placed in it's `in_path` folder).
+
+There are two events will a timeout can cause a failure for filtering:
+
+- Not terminating on time when reaching the end of the timeout period
+- Already being terminated even though there are still files in the `in_path` folder.  Again, if a filter terminates and new files end up in the `in_path` folder, the indexer will start another instance of the filter's executable.  If the filter continuously terminates while leaving files still in the `in_path` folder, then this is a possible event where a timeout will be reached.
+
+A timeout failure for an individual filter causes the following:
+
+- Any files still in the `in_path` folder for that filter will not be archived since they are not fully filtered
+- An error is written to the log stating the filter's name with a timeout error
+- Any files that made it to the `out_path` folder will continue for processing by other filters
+
+*Note:*  Timeout periods for multiple filters don't all start at the same time.  Instead, the indexer goes on a one by one basis.  For example, let's assume there are three filters in consecutive order in the config file,
+
+| **Name** | **Timeout Period** |
+| -------- | ------------------ |
+| FilterA  | 30                 |
+| FilterB  | 120                |
+| FilterC  | 40                 |
+
+FilterA's is the first timeout to begin, which will run for 30 seconds.  Once FilterA has completed processing all files or it's timeout has caused it to terminate, then and only then will FilterB's time begin. 
+
+The worst case runtime for the entire filtering process, which again starts when the indexer has added all possible files to the FilterA's folder, would be 190 (30 + 120 + 40)
 
 ## Extra Notes
 
