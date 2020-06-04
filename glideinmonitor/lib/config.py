@@ -65,6 +65,12 @@ class Config:
             if not os.access(cur_filter["exe"], os.X_OK):
                 raise Exception("A filter '" + str(cur_filter["name"]) + "' has an exe that is not executable")
 
+            # Check if the name is a duplicate
+            for other_added_filter in filter_list:
+                if other_added_filter["name"] == cur_filter["name"]:
+                    raise Exception(
+                        "A filter '" + str(cur_filter["name"]) + "' of the same name has already been added")
+
             # Add the filter to the master list
             filter_list.append(cur_filter)
 
