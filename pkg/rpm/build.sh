@@ -25,7 +25,9 @@ $0 [options] [ PKG_VERSION [ PKG_RELEASE ]]
   -i       build in place, without checking out the specific branch
   -o USER  upload to OSG upstream the source packages. USER at the OSG library host
   -s DIR   update the OSG SVN files in DIR (directrory of the glideinmonitor package w/ osg and upstream subdirs)
-  -p PARTS to run only part of the setup, comma separated list (defaults to all: p1,p2)
+  -p PARTS to run only part of the setup, comma separated list of parts (defaults to all: p1,p2). Parts meaning:
+            p1 - is the source file preparation using setuptools
+            p2 - is the building of the RPMs using rpmbuild
 EOF
 }
 
