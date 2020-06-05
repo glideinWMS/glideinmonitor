@@ -25,6 +25,7 @@ $0 [options] [ PKG_VERSION [ PKG_RELEASE ]]
   -i       build in place, without checking out the specific branch
   -o USER  upload to OSG upstream the source packages. USER at the OSG library host
   -s DIR   update the OSG SVN files in DIR (directrory of the glideinmonitor package w/ osg and upstream subdirs)
+  -p PARTS to run only part of the setup, comma separated list (defaults to all: p1,p2)
 EOF
 }
 
@@ -73,8 +74,9 @@ update_svn () {
 VERBOSE=
 UPDATE_SETUP=
 DO_INPLACE=
+PARTS=p1,p2
 
-while getopts "hvfis:o:" option
+while getopts "hvfis:o:p:" option
 do
   case "${option}"
   in
@@ -84,6 +86,7 @@ do
   i) DO_INPLACE=yes;;
   s) OSG_SVN=$OPTARG;;
   o) OSG_USER=$OPTARG;;
+  p) PARTS=$OPTARG;;
   esac
 done
 
@@ -127,8 +130,13 @@ if [[ "$setup_version" != "$PKG_VERSION" ]]; then
     fi
 fi
 
+if [[ "$PARTS" = *p1* ]]; then
 echo "--- 1 --- creating the source packages"
 # Make the new RPM spec file and tarball (package is not actually used)
+if ! command -v rpm > /dev/null 2>&1; then
+    echo "ERROR: rpm command not found. Cannot prepare to build the RPM package."
+    exit 1
+fi
 if [[ -n "$VERBOSE" ]]; then
     python3 setup.py bdist_rpm
 else
@@ -143,8 +151,9 @@ else
     tar czf glideinmonitor-pkgrpm-${PKG_VERSION}.tar.gz pkg/rpm/templates
 fi
 mv glideinmonitor-pkgrpm-${PKG_VERSION}.tar.gz "${SOURCES_DIR}/"
+fi
 
-
+if [[ "$PARTS" = *p2* ]]; then
 echo "--- 2 --- building the RPMs "
 # Build RPM
 # which buildroot is it using?
@@ -152,17 +161,22 @@ echo "--- 2 --- building the RPMs "
 # BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 # using ~/rpmbuild/ (linked to /opt/glideinmonitor/glideinmonitor/build/bdist.linux-x86_64/rpm )
 # https://linux.die.net/man/8/rpmbuild
+if ! command -v rpmbuild > /dev/null 2>&1; then
+    echo "ERROR: rpmbuild command not found. Cannot build the RPM package."
+    exit 1
+fi
 
 sed -e "s/__GMONITOR_PKG_VERSION__/$PKG_VERSION/g" -e "s/__GMONITOR_PKG_RELEASE__/$PKG_RELEASE/g" pkg/rpm/glideinmonitor.spec > build/bdist.linux-x86_64/rpm/SPECS/glideinmonitor.spec
-pushd $SPECS_DIR > /dev/null
+pushd "${SPECS_DIR}/.." > /dev/null
 if [[ -n "$VERBOSE" ]]; then
-    rpmbuild -ba glideinmonitor.spec
+    rpmbuild --define "_topdir `pwd`" -ba SPECS/glideinmonitor.spec
 else
-    rpmbuild -ba glideinmonitor.spec &> /dev/null
+    rpmbuild --define "_topdir `pwd`" -ba SPECS/glideinmonitor.spec &> /dev/null
 fi
-cd ../RPMS/noarch
+cd RPMS/noarch
 echo "RPM files are in `pwd`"
 popd > /dev/null
+fi
 
 # git update and tagging?
 
