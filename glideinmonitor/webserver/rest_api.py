@@ -2,12 +2,16 @@ from flask import Flask, abort, send_file, request
 import json
 
 from glideinmonitor.lib.database import *
+from glideinmonitor.lib.config import Config
 
 
 def api_job_file(job_id, given_guid):
+    # Get configuration
+    file_type = Config.get('DisplayType')
+
     # Sends the job file itself
     db = Database()
-    path = db.getFile(job_id, given_guid)
+    path = db.getFile(job_id, given_guid, file_type)
     db.quit()
 
     # If it's not found, send a 404

@@ -14,6 +14,7 @@
   "Users": {
     "admin": "21232f297a57a5a743894a0e4a801fc3"
   },
+  "DisplayType": "filter",
   "Port": 8888,
   "Host": "127.0.0.1"
 }

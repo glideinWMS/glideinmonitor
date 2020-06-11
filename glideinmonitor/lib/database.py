@@ -207,15 +207,22 @@ class Database:
 
         return entries
 
-    def getFile(self, jobID, given_guid):
+    def getFile(self, jobID, given_guid, type):
         # Checks if a job exists in the database
         cur = self.conn.cursor()
 
-        # Do directory/file names need to be sanitized?
-        if given_guid:
-            cur.execute("SELECT FilePathOriginal FROM file_index WHERE GUID='{}'".format(jobID))
+        if type == 'original':
+            # Do directory/file names need to be sanitized?
+            if given_guid:
+                cur.execute("SELECT FilePathOriginal FROM file_index WHERE GUID='{}'".format(jobID))
+            else:
+                cur.execute("SELECT FilePathOriginal FROM file_index WHERE ID='{}'".format(jobID))
         else:
-            cur.execute("SELECT FilePathOriginal FROM file_index WHERE ID='{}'".format(jobID))
+            # Do directory/file names need to be sanitized?
+            if given_guid:
+                cur.execute("SELECT FilePathFilter FROM file_index WHERE GUID='{}'".format(jobID))
+            else:
+                cur.execute("SELECT FilePathFilter FROM file_index WHERE ID='{}'".format(jobID))
 
         response = cur.fetchone()
 
