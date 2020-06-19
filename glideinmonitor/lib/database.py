@@ -1,6 +1,11 @@
 import os
 import sqlite3
-import mysql.connector
+MYSQL_AVAILABLE = True
+try:
+    import mysql.connector
+except ImportError:
+    MYSQL_AVAILABLE = False
+
 from glideinmonitor.lib.config import Config
 from glideinmonitor.lib.logger import log
 
@@ -30,8 +35,11 @@ class Database:
                 script = script_file.read()
                 script_file.close()
                 db_cursor.executescript(script)
-        else:
+        elif Config.db("type") == "mysql":
             # MySQL Database
+            if not MYSQL_AVAILABLE:
+                log("ERROR", "MySQL database selected but there is no MySQL connector")
+                raise ImportError("Module not found: mysql.connector")
             try:
                 self.conn = mysql.connector.connect(
                     host=Config.db("host"),
@@ -73,6 +81,9 @@ class Database:
                 script = script_file.read()
                 script_file.close()
                 mycursor.execute(script)
+        else:
+            log("ERROR", "No valid database selected (%s)" % Config.db("type"))
+            raise ImportError("Invalid ")
 
     def dict_factory(self, cursor, row):
         d = {}

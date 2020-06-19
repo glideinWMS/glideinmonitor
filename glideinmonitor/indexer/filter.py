@@ -12,7 +12,7 @@ from threading import Thread
 
 from glideinmonitor.lib.config import Config
 from glideinmonitor.lib.logger import log
-from lib import condor_conversion
+from glideinmonitor.lib import condor_conversion
 
 
 class FilterInstance:
@@ -107,7 +107,7 @@ class Filter:
             return True
 
     @staticmethod
-    def type_moving(input_dir, output_dir, endType, unpacked_expectations):
+    def type_moving(input_dir, output_dir, end_type, unpacked_expectations):
         # Convert & move files from one directory to another, returning true if it moved files
         moved_files = False
 
@@ -124,7 +124,7 @@ class Filter:
                 shutil.move(os.path.join(input_dir, file), output_dir)
             else:
                 # Convert the .err file
-                if endType == "whole":
+                if end_type == "whole":
                     # Only process .err files (any other extension ignore)
                     if os.path.splitext(file)[1] != '.err':
                         continue
@@ -151,7 +151,7 @@ class Filter:
         return moved_files, unpacked_expectations
 
     @staticmethod
-    def filter_runner(base_directory, instance_list, jobQueue, messageQueue):
+    def filter_runner(base_directory, instance_list, job_queue, messageQueue):
         # Variables within runner
         master_jobs_list = {}
         unpacked_expectations = {}
@@ -180,10 +180,10 @@ class Filter:
                 completion_check = True
 
             # Process any new jobs
-            for i in range(0, jobQueue.qsize()):
+            for i in range(0, job_queue.qsize()):
                 # Get the next job passed from the indexer
                 completion_check = False
-                next_job = jobQueue.get()
+                next_job = job_queue.get()
 
                 # Generate a unique ID for the job
                 job_uuid = str(uuid.uuid1())
