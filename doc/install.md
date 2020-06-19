@@ -27,6 +27,7 @@ python3 setup.py bdist_wheel
 pip3 install dist/glideinmonitor-*.whl
 ```
 
+### Configuration
 Next, setup the configuration.  For the config.json file (which must be located in "/etc/.glideinmonitor/config.json"), below is an example file,
 
 ```json
@@ -56,7 +57,7 @@ This will also be documented later but here is what they briefly mean,
 * GWMS_Log_Dir - The archive directory which should/Must contain a sub directory called "client"
 * Saved_Log_Dir - A directory the indexer will use to zip and save the out/err files
 * db_type - Can be MySQL or SQLite
-* db_dir - SQLite - A directory to store the SQLite database file
+* db_dir, db_name - SQLite - A directory and DB file name to store the SQLite database file
 * db_host, db_user, db_pass, db_name - MySQL - connection info, on first run the database should be created manually without any tables in it
 * Log_Dir - A place to store logs from the webserver and indexer running
 * Log_Level - NONE, ERROR, WARNING, INFO are the acceptable options
@@ -90,13 +91,12 @@ yum install --enablerepo=osg-development glideinmonitor-monolith
 ```
 
 If you are installing from local files (RPM downloaded manually) yum dependencies between the GlideinMonitor packages will not work, 
-so you have to install them in order.
-
+so you have to install them in order:
 ```shell
 for i in  glideinmonitor-common glideinmonitor-indexer glideinmonitor-webserver glideinmonitor-monolith; do yum install -y ./$i*; done
 ```
 
-Here a configuration example using sqlie (`/etc/glideinmonitor.conf`) and the default RPM directories:
+Here a configuration example using sqlite (`/etc/glideinmonitor.conf`) and the default RPM directories:
 ```json
 {
   "GWMS_Log_Dir": "/var/lib/glideinmonitor/upload",
@@ -104,9 +104,6 @@ Here a configuration example using sqlie (`/etc/glideinmonitor.conf`) and the de
   "db": {
     "type": "sqlite",
     "dir": "/var/lib/glideinmonitor/db",
-    "host": "localhost",
-    "user": "root",
-    "pass": "",
     "db_name": "glideinmonitor"
   },
   "Log_Dir": "/var/log/glideinmonitor",
@@ -118,7 +115,7 @@ Here a configuration example using sqlie (`/etc/glideinmonitor.conf`) and the de
   "Host": "127.0.0.1"
 }
 ```
-
+See the [configuration section above](#configuration) for more information.
 
 Optionally prepare some sample files 
 ```bash
@@ -149,6 +146,27 @@ systemctl stop glideinmonitor-indexer.service
 ### Three hosts deployment
 
 Instructions coming soon
+
+### Troubleshooting a RPM installation
+
+You can start manually the services to get a better view of the error messages.
+Make sure that you start the services as `gmonitor` user and not `root`, 
+otherwise there will be files created by `root` that will cause the regular startup
+to fail
+```bash
+su - gmonitor
+/usr/sbin/glideinmonitor-indexer start
+/usr/sbin/glideinmonitor-webserver start
+```
+
+If the Python requirements (from requirements.txt) have not been installed as dependency for the current python, 
+they can be installed manually using the correct pip3, as `root`: 
+```bash
+pip3 install flask
+pip3 install flask_httpauth
+pip3 install mysql-connector-python
+```
+
 
 ## Install via Docker
 

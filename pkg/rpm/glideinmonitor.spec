@@ -152,6 +152,10 @@ getent passwd gmonitor >/dev/null || \
 usermod --append --groups gmonitor gmonitor >/dev/null
 
 
+%post common
+# this is optional, needed only if MySQL is used
+pip3 install mysql-connector-python
+
 %post indexer
 # $1 = 1 - Installation
 # $1 = 2 - Upgrade
@@ -160,6 +164,7 @@ systemctl daemon-reload
 
 %post webserver
 pip3 install flask
+pip3 install flask_httpauth
 systemctl daemon-reload
 # Protecting from failure in case it is not running/installed
 #/sbin/service httpd reload > /dev/null 2>&1 || true

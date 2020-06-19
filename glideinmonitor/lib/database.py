@@ -20,7 +20,7 @@ class Database:
                 log("INFO", "Creating new directory for SQLite DB")
             except FileExistsError:
                 pass
-            self.conn = sqlite3.connect(Config.db("dir") + '/database.sqlite')
+            self.conn = sqlite3.connect(os.path.join(Config.db("dir"), "%s.sqlite" % Config.db("db_name")))
 
             # Check if index table exists
             db_cursor = self.conn.cursor()
