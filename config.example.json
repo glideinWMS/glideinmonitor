@@ -11,10 +11,13 @@
   },
   "Log_Dir": "/etc/.glideinmonitor/logs",
   "Log_Level": "INFO",
-  "Users": {
-    "admin": "21232f297a57a5a743894a0e4a801fc3"
-  },
-  "DisplayType": "filter",
+  "Users": [
+    {
+      "name": "admin",
+      "password": "21232f297a57a5a743894a0e4a801fc3",
+      "filter": "original"
+    }
+  ],
   "Port": 8888,
   "Host": "127.0.0.1"
 }

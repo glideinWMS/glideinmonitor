@@ -44,9 +44,17 @@ Next, setup the configuration.  For the config.json file (which must be located 
   },
   "Log_Dir": "/etc/.glideinmonitor/logs",
   "Log_Level": "INFO",
-  "Users": {
-    "admin": "21232f297a57a5a743894a0e4a801fc3"
-  },
+  "Users": [
+    {
+      "name": "admin",
+      "password": "21232f297a57a5a743894a0e4a801fc3",
+      "filter": "original"
+    },
+    {
+      "name": "john",
+      "password": "f57dd60e195b04a106b90dfbd297db02"
+    }
+  ],
   "DisplayType": "filter",
   "Port": 8888,
   "Host": "127.0.0.1"
@@ -61,8 +69,10 @@ This will also be documented later but here is what they briefly mean,
 * db_host, db_user, db_pass, db_name - MySQL - connection info, on first run the database should be created manually without any tables in it
 * Log_Dir - A place to store logs from the webserver and indexer running
 * Log_Level - NONE, ERROR, WARNING, INFO are the acceptable options
-* DisplayType - What type of archive the webserver will give to users.  Valid options: `filter` and `original`
-* Users - For the webserver http auth, the key is the username and the value is an MD5 hash of the password (in the example above, the password is "admin". To create your own you can use something like `echo -n MY_PASSWORD | md5sum`)
+* Users - For the webserver http auth and providing archives
+    * Name: http auth username
+    * Password: http auth password; represented as a MD5 hash of the password (in the example above, the password is "admin"); To create your own you can use something like `echo -n MY_PASSWORD | md5sum`)
+    * Filter: The filter version to provide to the user on the web portal; Defaults to "original"
 * Port, Host - For the webserver to operate on
 
 It can be tested using a sample Glidein logs archive which contains the proper client subdirectory.

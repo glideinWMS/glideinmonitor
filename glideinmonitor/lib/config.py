@@ -26,6 +26,17 @@ class Config:
         else:
             cls.config_data = curr
 
+        # Configure users section
+        if "Users" not in cls.config_data:
+            raise Exception("No users section in the configuration")
+
+        for curr_user in cls.config_data["Users"]:
+            if not all(k in curr_user for k in ("name", "password")):
+                raise Exception("A user is missing a name and/or password")
+
+            # Add other optional fields with defaults if they are not present
+            curr_user.setdefault("filter", "original")
+
     @classmethod
     def dive(cls, config_path):
         config_contents = Path(config_path).read_text()
@@ -40,6 +51,25 @@ class Config:
             return curr
         else:
             return curr
+
+    @classmethod
+    def user_exists(cls, user):
+        # Returns true/false if the user exists or not
+        for curr_user in cls.config_data["Users"]:
+            if curr_user["name"] == user:
+                return True
+
+        return False
+
+    @classmethod
+    def user(cls, user):
+        # Returns user data set options for a user name
+        if not cls.user_exists(user):
+            raise Exception("User: " + user + " does not exist")
+
+        for curr_user in cls.config_data["Users"]:
+            if curr_user["name"] == user:
+                return curr_user
 
     @classmethod
     def filters(cls):

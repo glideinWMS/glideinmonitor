@@ -7,7 +7,7 @@ from glideinmonitor.lib.config import Config
 
 def api_job_file(job_id, given_guid):
     # Get configuration
-    file_type = Config.get('DisplayType')
+    file_type = Config.user(request.authorization.username).get('filter')
 
     # Sends the job file itself
     db = Database()

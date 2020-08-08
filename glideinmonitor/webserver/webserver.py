@@ -20,8 +20,8 @@ auth = HTTPBasicAuth()
 
 @auth.verify_password
 def verify_password(username, password):
-    if username in Config.get('Users'):
-        return Config.get('Users').get(username) == hashlib.md5(password.encode()).hexdigest()
+    if Config.user_exists(username):
+        return Config.user(username).get("password") == hashlib.md5(password.encode()).hexdigest()
     return False
 
 
