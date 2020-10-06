@@ -29,7 +29,7 @@ setup(
         #   3 - Alpha
         #   4 - Beta
         #   5 - Production/Stable
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: BSD License',
         'Operating System :: MacOS :: MacOS X',
@@ -43,7 +43,7 @@ setup(
     license="Fermitools Software Legal Information (Modified BSD License)",
     keywords='glideinwms workflow web monitor',
 
-    packages=find_packages(exclude=['contrib', 'docs', 'tests', 'build']),
+    packages=find_packages(exclude=['contrib', 'doc', 'pkg', 'test', 'build']),
     include_package_data=True,
     #package_data={'': ['*.sql', '*.html', '*.css', '*.js', 'default_config.json']},
 

@@ -118,7 +118,7 @@ Here a configuration example using sqlite (`/etc/glideinmonitor.conf`) and the d
 See the [configuration section above](#configuration) for more information.
 
 Optionally prepare some sample files 
-```bash
+```shell
 pushd /var/lib/glideinmonitor/upload/
 tar xvzf ~/sample.tar.gz
 mv archive/client ./
@@ -127,7 +127,7 @@ rmdir archive/
 ```
 
 To start/stop the services you should use systemctl:
-```bash
+```shell
 # After the RPM install
 systemctl reload systemd
 
@@ -153,7 +153,7 @@ You can start manually the services to get a better view of the error messages.
 Make sure that you start the services as `gmonitor` user and not `root`, 
 otherwise there will be files created by `root` that will cause the regular startup
 to fail
-```bash
+```shell
 su - gmonitor
 /usr/sbin/glideinmonitor-indexer start
 /usr/sbin/glideinmonitor-webserver start
@@ -161,7 +161,7 @@ su - gmonitor
 
 If the Python requirements (from requirements.txt) have not been installed as dependency for the current python, 
 they can be installed manually using the correct pip3, as `root`: 
-```bash
+```shell
 pip3 install flask
 pip3 install flask_httpauth
 pip3 install mysql-connector-python
