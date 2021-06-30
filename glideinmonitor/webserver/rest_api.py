@@ -21,6 +21,12 @@ def api_job_file(job_id, given_guid):
     return path
 
 
+def api_condorjob_file(factory, feuser, entry_name, condor_job_id):
+    # Get configuration
+
+    return "/data/glideinmonitor/upload/%s/user_%s/glidein_gfactory_instance/entry_%s/job.%s" % (factory, feuser, entry_name, condor_job_id)
+
+
 def api_job_info(job_id, given_guid):
     # Provides info on a job in a JSON format
     db = Database()

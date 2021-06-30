@@ -34,6 +34,8 @@ def directory_jobs(start_path):
 
     # Iterate through each folder in the starting directory (probably GWMS_Log_Dir)
     for root, dirs, files in os.walk(start_path):
+        log("DEBUG", "Indexing directory. Data root %s dirs %s" % (str(root), str(dirs)))
+
         # Child directory level
         level = root.replace(start_path, '').count(os.sep)
 
