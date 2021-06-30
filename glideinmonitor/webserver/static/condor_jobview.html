@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GWMS Factory - Condor Job View</title>
+
+    <link href="/assets/libs/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.5.0/css/bootstrap4-toggle.min.css"
+          rel="stylesheet">
+
+    <style>
+        .container {
+            padding-top: 50px;
+        }
+
+        .code tr th {
+            width: 10px;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container" style="padding-top: 10px; padding-bottom: 10px">
+            <a class="navbar-brand" href="/">GWMS Factory Job Logs</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbarCollapse"
+                    aria-controls="mainNavbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="mainNavbarCollapse">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container">
+
+        <div class="card">
+            <div class="card-header"><h3>
+                Job
+                <strong>{{job_id}}</strong>
+            </h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm">
+                        <h4>General Information</h4>
+                        <table class="table table-hover">
+                            <tbody>
+                            <tr>
+                                <th scope="row">FileSize <small>(.err + .out)</small></th>
+                                <td>{{infoFileSize}}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Entry Name</th>
+                                <td>{{infoEntryName}}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Frontend Username</th>
+                                <td>{{infoFrontendUsername}}</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-sm">
+                        <div class="row">
+                            <h4>Data Files </h4>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm">
+                                <input id="toggleFileAction" type="checkbox" checked data-toggle="toggle" data-on="Open"
+                                       data-off="Download" data-onstyle="secondary" data-offstyle="secondary">
+                            </div>
+                        </div>
+                        <div style="padding-top: 10px" class="row">
+                            <div class="col-sm">
+                                <div style="max-width: 300px">
+                                    <h5>Full Logs</h5>
+                                    <button id="btnJobOUT" disabled type="button"
+                                            class="btn btn-outline-secondary btn-lg btn-block  text-justify">
+                                        {{job_id}}.out
+                                        <ion-icon name="arrow-forward"></ion-icon>
+                                    </button>
+                                    <br>
+                                    <button id="btnJobERR" disabled type="button"
+                                            class="btn btn-outline-secondary btn-lg btn-block  text-justify">
+                                        {{job_id}}.err
+                                        <ion-icon name="arrow-forward"></ion-icon>
+                                    </button>
+                                    <br>
+                                    <button id="btnJobGZIP" type="button"
+                                            class="btn btn-outline-primary btn-lg btn-block  text-justify">
+                                        {{job_id}}.tar.gz
+                                        <ion-icon name="arrow-forward"></ion-icon>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-sm">
+                                <div style="max-width: 300px">
+                                    <h5>Condor Logs</h5>
+                                    <button id="btnMasterLog" disabled type="button"
+                                            class="btn btn-outline-secondary btn-lg btn-block text-justify">Master Log
+                                        <ion-icon name="arrow-forward"></ion-icon>
+                                    </button>
+                                    <br>
+                                    <button id="btnStartdLog" disabled type="button"
+                                            class="btn btn-outline-secondary btn-lg btn-block text-justify">Startd Log
+                                        <ion-icon name="arrow-forward"></ion-icon>
+                                    </button>
+                                    <br>
+                                    <button id="btnStarterLog" disabled type="button"
+                                            class="btn btn-outline-secondary btn-lg btn-block text-justify">Starter Log
+                                        <ion-icon name="arrow-forward"></ion-icon>
+                                    </button>
+                                    <br>
+                                    <button id="btnStardHistLog" disabled type="button"
+                                            class="btn btn-outline-secondary btn-lg btn-block text-justify">StardHist
+                                        Log
+                                        <ion-icon name="arrow-forward"></ion-icon>
+                                    </button>
+                                    <br>
+                                    <button id="btnXMLDescLog" disabled type="button"
+                                            class="btn btn-outline-secondary btn-lg btn-block text-justify">XML
+                                        Description
+                                        <ion-icon name="arrow-forward"></ion-icon>
+                                    </button>
+                                    <br>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Totally efficient way to allow someone to scroll past the bottom of the screen, I am a good programmer -->
+        <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+    </div>
+
+    <script src="/assets/libs/jquery.min.js"
+            integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+            crossorigin="anonymous"></script>
+    <script src="/assets/libs/bootstrap.min.js"
+            crossorigin="anonymous"></script>
+    <script src="/assets/libs/vue.min.js"
+            integrity="sha256-chlNFSVx3TdcQ2Xlw7SvnbLAavAQLO0Y/LBiWX04viY="
+            crossorigin="anonymous"></script>
+    <script src="/assets/libs/moment.min.js"
+            crossorigin="anonymous"></script>
+    <script type="module" src="https://unpkg.com/ionicons@4.5.10-0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule="" src="https://unpkg.com/ionicons@4.5.10-0/dist/ionicons/ionicons.js"></script>
+
+    <script src="/assets/libs/FileSaver.min.js" crossorigin="anonymous"></script>
+
+    <script src="/assets/libs/bootstrap4-toggle.min.js"></script>
+
+
+    <script src="/assets/bundle.js"></script>
+    <script src="/assets/condor_jobview.js"></script>
+</div>
+</body>
+</html>

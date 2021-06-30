@@ -1,5 +1,6 @@
 import os
 import sys
+import json
 import datetime
 import hashlib
 import argparse
@@ -9,6 +10,8 @@ from flask_httpauth import HTTPBasicAuth
 # TODO: explicit import to understand better scope
 from glideinmonitor.webserver.rest_api import *
 from glideinmonitor.lib.config import Config
+from glideinmonitor.lib.logger import log
+
 
 app = Flask(__name__)
 auth = HTTPBasicAuth()
@@ -37,6 +40,15 @@ def app_homepage():
 @auth.login_required
 def app_job(job_id):
     with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'static', 'jobview.html'), 'r') as file:
+        data = file.read()
+    return data
+
+
+@app.route('/condor_job/<factory>/<feuser>/<entry_name>/<condor_job_id>')
+@auth.login_required
+def app_condor_job(factory, feuser, entry_name, condor_job_id):
+    log("DEBUG", "Serving factory=%s, feuser=%s, entry_name=%s, condor_job_id=%s" % (factory, feuser, entry_name, condor_job_id))
+    with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'static', 'condor_jobview.html'), 'r') as file:
         data = file.read()
     return data
 
@@ -90,11 +102,19 @@ def flask_api_job_download_db(job_id):
     return send_file(api_job_file(job_id, False), as_attachment=True)
 
 
+@app.route('/api/job_download/condor_id/<factory>/<feuser>/<entry_name>/<condor_job_id>')
+@auth.login_required
+def flask_api_condorjob_download_db(factory, feuser, entry_name, condor_job_id):
+    # Download job for given condor id
+    return send_file(api_condorjob_file(factory, feuser, entry_name, condor_job_id), as_attachment=True)
+
+
 @app.route('/api/job_info/<job_guid>')
 @auth.login_required
 def flask_api_job_info(job_guid):
     # Info for a job given GUID
-    return api_job_info(job_guid, True)
+    info = api_job_info(job_guid, True)
+    return redirect("/job/" + str(json.loads(info)["ID"]), code=303)
 
 
 @app.route('/api/job_info/db_id/<job_id>')
