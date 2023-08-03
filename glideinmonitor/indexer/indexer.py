@@ -5,6 +5,7 @@ import tarfile
 import time
 import pathlib
 import argparse
+import shutil
 
 from glideinmonitor.lib.config import Config
 from glideinmonitor.lib.database import Database
@@ -179,15 +180,13 @@ def archive_files(db, job_index_list):
             os.makedirs(final_dir_name_filter)
 
         # Tar the output and error file
-        save_file_name = job_data["instance_name"] + "_" + job_data["entry_name"] + "_" + job_data["job_id"] + ".tar.gz"
+        save_file_name = job_data["instance_name"] + "_" + job_data["entry_name"] + "_" + job_data["job_id"]
         file_path_original = os.path.join(final_dir_name_original, "original_" + save_file_name)
         file_path_filter = os.path.join(final_dir_name_filter, "filter_" + save_file_name)
 
         # Save the original immediately
-        with tarfile.open(file_path_original, "w:gz") as tar:
-            tar.add(job_data["out_file_path"], arcname=os.path.basename(job_data["out_file_path"]))
-            tar.add(job_data["err_file_path"], arcname=os.path.basename(job_data["err_file_path"]))
-            tar.close()
+        shutil.copy(job_data["out_file_path"], file_path_original + ".out")
+        shutil.copy(job_data["err_file_path"], file_path_original + ".err")
 
         # An archive of the original files has been created, filePath_original
         # Now, add the job to the filter queue and give it the final destination full path, filePath_filter
@@ -211,7 +210,7 @@ def archive_files(db, job_index_list):
 def main():
     # Parse command line arguments (if any)
     parser = argparse.ArgumentParser(description="GlideinMonitor's indexing script for GlideIn .out & .err files")
-    parser.add_argument('-c', help="Path to Config File")
+    parser.add_argument('-c', help="Path to Config File", metavar="PATH")
     parser.add_argument('-f', help="Ignore the lock file and force an index anyway", action='store_true')
     args = parser.parse_args()
 
@@ -251,4 +250,15 @@ def main():
 
 
 if __name__ == "__main__":
+    # TODO: Remove profiling code before merging to master
+
+    import cProfile
+    import pstats
+    
+    ob = cProfile.Profile()
+    ob.enable()
+
     main()
+
+    ob.disable()
+    pstats.Stats(ob).sort_stats(pstats.SortKey.CUMULATIVE).print_stats()

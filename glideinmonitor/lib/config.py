@@ -20,6 +20,7 @@ class Config:
         if "parent_config" in curr and curr["parent_config"] != "":
             parent = cls.dive(curr["parent_config"])
 
+            # TODO: Should curr update parent instead?
             curr.update(parent)
 
             cls.config_data = curr
