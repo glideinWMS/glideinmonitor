@@ -157,7 +157,7 @@ def determine_indexing(db):
     return job_index_list
 
 
-def archive_files(db, job_index_list):
+def archive_files(db, job_index_list,compress=False):
     saved_dir_name = Config.get('Saved_Log_Dir')
     datetime_name = datetime.datetime.now().strftime("%Y-%m-%d")
 
@@ -185,8 +185,15 @@ def archive_files(db, job_index_list):
         file_path_filter = os.path.join(final_dir_name_filter, "filter_" + save_file_name)
 
         # Save the original immediately
-        shutil.copy(job_data["out_file_path"], file_path_original + ".out")
-        shutil.copy(job_data["err_file_path"], file_path_original + ".err")
+        if compress:
+             with tarfile.open(file_path_original, "w:gz") as tar:
+                tar.add(job_data["out_file_path"], arcname=os.path.basename(job_data["out_file_path"]))
+                tar.add(job_data["err_file_path"], arcname=os.path.basename(job_data["err_file_path"]))
+                tar.close()
+        else:
+            shutil.copy(job_data["out_file_path"], file_path_original + ".out")
+            shutil.copy(job_data["err_file_path"], file_path_original + ".err")
+
 
         # An archive of the original files has been created, filePath_original
         # Now, add the job to the filter queue and give it the final destination full path, filePath_filter
@@ -212,6 +219,7 @@ def main():
     parser = argparse.ArgumentParser(description="GlideinMonitor's indexing script for GlideIn .out & .err files")
     parser.add_argument('-c', help="Path to Config File", metavar="PATH")
     parser.add_argument('-f', help="Ignore the lock file and force an index anyway", action='store_true')
+    parser.add_argument("-z","--compress", action="store_true", help="Compress archive files")
     args = parser.parse_args()
 
     # Process config file
@@ -239,7 +247,7 @@ def main():
     job_index_list = determine_indexing(db)
 
     # Archive the original files
-    archive_files(db, job_index_list)
+    archive_files(db, job_index_list,args.compress)
 
     # Indexing & filtering complete
     db.commit()
@@ -261,4 +269,6 @@ if __name__ == "__main__":
     main()
 
     ob.disable()
-    pstats.Stats(ob).sort_stats(pstats.SortKey.CUMULATIVE).print_stats()
+    profile = pstats.Stats(ob).sort_stats(pstats.SortKey.CUMULATIVE)
+    profile.print_stats()
+    profile.dump_stats("savedStat")
