@@ -159,13 +159,14 @@ pip3 install mysql-connector-python
 %post indexer
 # $1 = 1 - Installation
 # $1 = 2 - Upgrade
-# Source: http://www.ibm.com/developerworks/library/l-rpm2/
-systemctl daemon-reload
+# Protecting against failure (some containers)
+systemctl daemon-reload || true
 
 %post webserver
 pip3 install flask
 pip3 install flask_httpauth
-systemctl daemon-reload
+# Protecting against failure (some containers)
+systemctl daemon-reload || true
 # Protecting from failure in case it is not running/installed
 #/sbin/service httpd reload > /dev/null 2>&1 || true
 
@@ -174,7 +175,8 @@ systemctl daemon-reload
 # $1 = 0 - Action is uninstall
 # $1 = 1 - Action is upgrade
 if [ "$1" = "0" ] ; then
-    systemctl daemon-reload
+    # Protecting against failure (some containers)
+    systemctl daemon-reload || true
 fi
 #if [ "$1" = "0" ]; then
 #    # Remove the symlinks if added
@@ -186,7 +188,8 @@ fi
 
 %preun webserver
 if [ "$1" = "0" ] ; then
-    systemctl daemon-reload
+    # Protecting against failure (some containers)
+    systemctl daemon-reload || true
 fi
 
 
