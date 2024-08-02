@@ -1,4 +1,4 @@
-from flask import Flask, abort, send_file, request
+from flask import abort, request
 import json
 
 from glideinmonitor.lib.database import *

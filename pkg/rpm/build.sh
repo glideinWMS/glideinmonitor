@@ -9,7 +9,7 @@ OSG_USER=
 OSG_SVN=
 OSG_HOST=library.cs.wisc.edu
 OSG_UPSTREAM=/p/vdt/public/html/upstream/
-GMONITOR_REPO="ssh://p-glideinwms@cdcvs.fnal.gov/cvs/projects/glideinwms-glideinmonitor"
+GMONITOR_REPO="https://github.com/glideinWMS/glideinmonitor.git"
 work_dir="/tmp/osgrelease.$$"
 
 

@@ -15,7 +15,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='glideinmonitor',
-    version='1.1',
+    version='1.2',
     description='GlideinMonitor Web Server and Indexer',
 
     long_description=long_description,
