@@ -253,7 +253,7 @@ class Database:
 
         # Do directory/file names need to be sanitized?
         if given_guid:
-            cur.execute("SELECT * FROM file_index WHERE GUID='{}'".format(jobID))
+            cur.execute("SELECT * FROM file_index WHERE GUID LIKE '{}'".format(jobID))
         else:
             cur.execute("SELECT * FROM file_index WHERE ID='{}'".format(jobID))
 

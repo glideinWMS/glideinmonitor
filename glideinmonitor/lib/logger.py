@@ -24,4 +24,4 @@ def log(error_level, message):
         os.makedirs(log_location_dir)
     log_location = os.path.join(log_location_dir, datetime.datetime.now().strftime("%Y-%m-%d") + ".txt")
     with open(log_location, "a") as log_file:
-        log_file.write(error_level + " - " + str(int(datetime.datetime.now().timestamp())) + " - " + message + "\n")
+        log_file.write(error_level + " - " + "{:%Y-%m-%d %H:%M:%S%z}".format(datetime.datetime.now()) + " - " + message + "\n")
